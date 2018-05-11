@@ -237,14 +237,14 @@ public:
 		return h_cur;
 	}
 
-	Expression expressions_fusion(Expression a, Expression b, ComputationGraph& cg) {
-		float *p_a = a.value().v;
-		float *p_b = b.value().v;
-		vector<float> fusion = vector<float> (p_a, p_a+a.dim().size());
-		fusion.insert(fusion.end(), p_b, p_b + b.dim().size());
+	// Expression expressions_fusion(Expression a, Expression b, ComputationGraph& cg) {
+	// 	float *p_a = a.value().v;
+	// 	float *p_b = b.value().v;
+	// 	vector<float> fusion = vector<float> (p_a, p_a+a.dim().size());
+	// 	fusion.insert(fusion.end(), p_b, p_b + b.dim().size());
 
-		return input(cg, {800}, fusion);
-	}
+	// 	return input(cg, {800}, fusion);
+	// }
 
 	/**
 	 * \brief Return the negative log likelihood for the (batched) pair (x,y)
@@ -261,7 +261,7 @@ public:
 		// compute output
 		Expression y1 = single_siamese_run(x1, cg);
 		Expression y2 = single_siamese_run(x2, cg);
-		Expression y = expressions_fusion(y1,y2,cg);
+		Expression y = concatenate({y1,y2});
 		// Do softmax
 		Expression losses = pickneglogsoftmax(y, labels);
 		// Sum across batches
@@ -282,7 +282,7 @@ public:
 		// run MLP to get class distribution
 		Expression y1 = single_siamese_run(x1, cg);
 		Expression y2 = single_siamese_run(x2, cg);
-		Expression y = expressions_fusion(y1,y2,cg);
+		Expression y = concatenate({y1,y2});
 		// Get values
 		vector<float> probs = as_vector(cg.forward(y));
 		// Get argmax

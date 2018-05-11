@@ -58,6 +58,10 @@ int main(int argc, char** argv) {
         Layer(/* input_dim */ 784, /* output_dim */ 512, /* activation */ RELU, /* dropout_rate */ 0.2),
         Layer(/* input_dim */ 512, /* output_dim */ 512, /* activation */ RELU, /* dropout_rate */ 0.2),
         Layer(/* input_dim */ 512, /* output_dim */ 10, /* activation */ LINEAR, /* dropout_rate */ 0.0)
+    }),vector<Layer>({
+        Layer(/* input_dim */ 784, /* output_dim */ 512, /* activation */ RELU, /* dropout_rate */ 0.2),
+        Layer(/* input_dim */ 512, /* output_dim */ 512, /* activation */ RELU, /* dropout_rate */ 0.2),
+        Layer(/* input_dim */ 512, /* output_dim */ 10, /* activation */ LINEAR, /* dropout_rate */ 0.0)
     }));
 
 
@@ -83,12 +87,12 @@ int main(int argc, char** argv) {
     vector<Expression> cur_batch;
     vector<unsigned> cur_labels;
 
+    ifstream speaker_file ("./scripts/data.txt", ifstream::in);
+    string speaker1, speaker2;
     // Run for the given number of epochs (or indefinitely if params.NUM_EPOCHS is negative)
-    while (static_cast<int>(epoch) < params.NUM_EPOCHS || params.NUM_EPOCHS < 0) {
-        // Reshuffle the dataset
-        cerr << "**SHUFFLE\n";
-        random_shuffle(order.begin(), order.end());
-        // Initialize loss and number of samples processed (to average loss)
+    //while (static_cast<int>(epoch) < params.NUM_EPOCHS || params.NUM_EPOCHS < 0) {
+    while(!speaker_file.eof()) {
+
         double loss = 0;
         double num_samples = 0;
 
@@ -98,7 +102,8 @@ int main(int argc, char** argv) {
         // Activate dropout
         nn.enable_dropout();
 
-        for (si = 0; si < num_batches; ++si) {
+        for (int i = 0; i < 20; ++i) {
+            speaker_file >> speaker1 >> speaker2;
             // build graph for this instance
             ComputationGraph cg;
             // Compute batch start id and size
@@ -114,7 +119,7 @@ int main(int argc, char** argv) {
             // Reshape as batch (not very intuitive yet)
             Expression x_batch = reshape(concatenate_cols(cur_batch), Dim({784}, bsize));
             // Get negative log likelihood on batch
-            Expression loss_expr = nn.get_nll(x_batch, cur_labels, cg);
+            Expression loss_expr = nn.get_nll(x_batch, x_batch, cur_labels, cg);
             // Get scalar error for monitoring
             loss += as_scalar(cg.forward(loss_expr));
             // Increment number of samples processed
@@ -148,7 +153,7 @@ int main(int argc, char** argv) {
                 // Get input expression
                 Expression x = input(cg, {784}, mnist_dev[i]);
                 // Get negative log likelihood on batch
-                unsigned predicted_idx = nn.predict(x, cg);
+                unsigned predicted_idx = nn.predict(x, x, cg);
                 // Increment count of positive classification
                 if (predicted_idx == mnist_dev_labels[i])
                 dpos++;
