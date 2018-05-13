@@ -1,24 +1,41 @@
 import os
 import random
 
-def randomFile(speaker,d):
-    return random.choice(d[speaker])
+def randomFile(speaker,d,isTest):
+    return random.choice(d[speaker][isTest])
 
-def writeExample(speaker1,speaker2,file):
-    file.write('%s %s\n'%(speaker1,speaker2))
+def writeExample(speaker1,speaker2,label,file):
+    file.write('%s %s %d\n'%(speaker1,speaker2,label))
 
-def positiveExample(speaker,d,file):
-    f1 = randomFile(speaker,d)
+def positiveExample(speaker,d,file,isTest):
+    f1 = randomFile(speaker,d,isTest)
     f2 = f1
     while f1 == f2:
-        f2 = randomFile(speaker,d)
-    writeExample(f1,f2,file)
+        f2 = randomFile(speaker,d,isTest)
+    writeExample(f1,f2,1,file)
 
-def negativeExample(speaker,d,file):
+def negativeExample(speaker,d,file,isTest):
     speaker2 = str(speaker)
     while speaker == speaker2:
         speaker2 = random.choice(list(d.keys()))
-    writeExample(randomFile(speaker,d),randomFile(speaker2,d),file)
+    writeExample(randomFile(speaker,d,isTest),randomFile(speaker2,d,isTest),0,file)
+
+def createData(file,isTest):
+    n_examples = 0
+    while speakers != []:
+        i = random.randrange(len(speakers))
+        positiveExample(speakers[i],d,file,isTest)
+        negativeExample(speakers[i],d,file,isTest)
+        del speakers[i]
+        n_examples += 2
+
+    speakers = list(d.keys())
+    while n_examples%20 != 0:
+        i = random.randrange(len(speakers))
+        positiveExample(speakers[i],d,file,isTest)
+        negativeExample(speakers[i],d,file,isTest)
+        del speakers[i]
+        n_examples += 2
 
 
 # DATA READING
@@ -35,26 +52,23 @@ remove = [k for k,v in d.items() if len(v) < 8]
 for k in remove:
     del d[k]
 
+# TRAIN AND TEST DIVISION
+for k,v in d:
+    random.shuffle(v)
+    sep = int(len(v) * 0.75)
+    d[k] = (v[:sep],v[sep:])
+
 # BATCH CREATION
 random.seed(1996)
 speakers = list(d.keys())
 
-file = open('data.txt','w')
-n_examples = 0
-while speakers != []:
-    i = random.randrange(len(speakers))
-    positiveExample(speakers[i],d,file)
-    negativeExample(speakers[i],d,file)
-    del speakers[i]
-    n_examples += 2
+train_file = open('train.dat','w')
+createData(train_file,0)
+train_file.close()
 
-speakers = list(d.keys())
-while n_examples%20 != 0:
-    i = random.randrange(len(speakers))
-    positiveExample(speakers[i],d,file)
-    negativeExample(speakers[i],d,file)
-    del speakers[i]
-    n_examples += 2
+test_file = open('test.dat','w')
+createData(test_file,1)
+test_file.close()
 
 
 
