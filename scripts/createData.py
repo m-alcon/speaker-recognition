@@ -22,6 +22,7 @@ def negativeExample(speaker,d,file,isTest):
 
 def createData(file,isTest):
     n_examples = 0
+    speakers = list(d.keys())
     while speakers != []:
         i = random.randrange(len(speakers))
         positiveExample(speakers[i],d,file,isTest)
@@ -53,14 +54,13 @@ for k in remove:
     del d[k]
 
 # TRAIN AND TEST DIVISION
-for k,v in d:
+for k,v in d.items():
     random.shuffle(v)
     sep = int(len(v) * 0.75)
     d[k] = (v[:sep],v[sep:])
 
 # BATCH CREATION
 random.seed(1996)
-speakers = list(d.keys())
 
 train_file = open('train.dat','w')
 createData(train_file,0)

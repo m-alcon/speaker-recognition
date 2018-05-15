@@ -22,23 +22,14 @@ int main(int argc, char** argv) {
 
     get_args(argc, argv, params, TRAIN_SUP);
 
-    // Load Dataset ----------------------------------------------------------------------------------
-    // Load data
-    vector<vector<float>> mnist_train, mnist_dev;
-
-    read_mnist(params.train_file, mnist_train);
-    read_mnist(params.dev_file, mnist_dev);
-
-    // Load labels
-    vector<unsigned> mnist_train_labels, mnist_dev_labels;
-
-    read_mnist_labels(params.train_labels_file, mnist_train_labels);
-    read_mnist_labels(params.dev_labels_file, mnist_dev_labels);
+    unsigned batch_size = 20;
+    unsigned epoch_size = 345;
 
     // ParameterCollection name (for saving) -----------------------------------------------------------------------
+
     ostringstream os;
     // Store a bunch of information in the model name
-    os << params.exp_name
+    os << "siamese_network"
         << "_" << "mlp"
         << "_" << 10240 << "-" << 5000 << "-relu-" << 0.2
         << "_" << 5000 << "-" << 400 << "-relu-" << 0.2
@@ -52,7 +43,7 @@ int main(int argc, char** argv) {
     ParameterCollection model;
     // Use Adam optimizer
     AdamTrainer trainer(model);
-  trainer.clip_threshold *= params.BATCH_SIZE;
+    trainer.clip_threshold *= batch_size;
 
     // Create model
     MLP nn(model, vector<Layer>({
@@ -60,27 +51,20 @@ int main(int argc, char** argv) {
         Layer(/* input_dim */ 5000, /* output_dim */ 400, /* activation */ RELU, /* dropout_rate */ 0.2),
         Layer(/* input_dim */ 400, /* output_dim */ 400, /* activation */ RELU, /* dropout_rate */ 0.0)
     }),vector<Layer>({
-        Layer(/* input_dim */ 800, /* output_dim */ 1, /* activation */ SIGMOID, /* dropout_rate */ 0.2)
+         Layer(/* input_dim */ 800, /* output_dim */ 1, /* activation */ SIGMOID, /* dropout_rate */ 0.2)
     }));
 
 
     // Load preexisting weights (if provided)
-    if (params.model_file != "") {
-        TextFileLoader loader(params.model_file);
-        loader.populate(model);
-    }
+    // if (params.model_file != "") {
+    //     TextFileLoader loader(params.model_file);
+    //     loader.populate(model);
+    // }
 
     // Initialize variables for training -------------------------------------------------------------
     // Worst accuracy
     double worst = 0;
 
-    // Number of batches in training set
-    unsigned num_batches = mnist_train.size()  / params.BATCH_SIZE - 1;
-
-    // Random indexing
-    unsigned si;
-    vector<unsigned> order(num_batches);
-    for (unsigned i = 0; i < num_batches; ++i) order[i] = i;
 
     unsigned epoch = 0;
     vector<Expression> cur_batch1, cur_batch2;
@@ -92,7 +76,7 @@ int main(int argc, char** argv) {
     // Run for the given number of epochs (or indefinitely if params.NUM_EPOCHS is negative)
     //while (static_cast<int>(epoch) < params.NUM_EPOCHS || params.NUM_EPOCHS < 0) {
     while(!train_file.eof()) {
-
+        cout << "while" << endl;
         double loss = 0;
         double num_samples = 0;
 
@@ -102,10 +86,8 @@ int main(int argc, char** argv) {
         // Activate dropout
         nn.enable_dropout();
 
-        unsigned batch_size = 20;
-        unsigned epoch_size = 345;
-
         for (int i = 0; i < epoch_size; ++i) {
+            cout << "for-" << i << endl;
             // build graph for this instance
             ComputationGraph cg;
             // Get input batch
@@ -132,7 +114,7 @@ int main(int argc, char** argv) {
             // Update parameters
             trainer.update();
             // Print progress every tenth of the dataset
-            if ((i + 1) % (num_batches / 10) == 0 || si == num_batches - 1) {
+            if (i % 10 == 0) {
                 // Print informations
                 trainer.status();
                 cerr << " E = " << (loss / num_samples) << ' ';

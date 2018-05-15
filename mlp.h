@@ -73,7 +73,8 @@ public:
 struct MLP {
 protected:
 	// Hyper-parameters
-	unsigned LAYERS = 0;
+	unsigned SIAMESE_LAYERS = 0;
+	unsigned UNION_LAYERS = 0;
 
 	// Layers
 	vector<Layer> layers;
@@ -90,7 +91,8 @@ public:
 	 * \details Dont forget to add layers!
 	 */
 	MLP(ParameterCollection & model) {
-		LAYERS = 0;
+		SIAMESE_LAYERS = 0;
+		UNION_LAYERS = 0;
 	}
 	/**
 	 * \brief Returns a Multilayer perceptron
@@ -102,26 +104,32 @@ public:
 	MLP(ParameterCollection& model,
 			vector<Layer> layers, vector<Layer> union_layers) {
 		// Verify layers compatibility
+		cout << "MPL" << endl;
 		for (unsigned l = 0; l < layers.size() - 1; ++l) {
+			cout << "for1" << endl;
 			if (layers[l].output_dim != layers[l + 1].input_dim)
 				throw invalid_argument("Layer dimensions don't match");
 		}
 
 		// Register parameters in model
 		for (Layer layer : layers) {
+			cout << "append1" << endl;
 			siamese_append(model, layer);
 		}
 
 		// Verify union_layers compatibility
 		for (unsigned l = 0; l < union_layers.size() - 1; ++l) {
+			cout << "for2" << endl;
 			if (union_layers[l].output_dim != union_layers[l + 1].input_dim)
 				throw invalid_argument("Layer dimensions don't match");
 		}
 
 		// Register union_parameters in model
 		for (Layer layer : union_layers) {
+			cout << "append2" << endl;
 			union_append(model, layer);
 		}
+		cout << "out" << endl;
 	}
 
 	/**
@@ -133,13 +141,13 @@ public:
 	 */
 	void siamese_append(ParameterCollection& model, Layer layer) {
 		// Check compatibility
-		if (LAYERS > 0)
-			if (layers[LAYERS - 1].output_dim != layer.input_dim)
+		if (SIAMESE_LAYERS > 0)
+			if (layers[SIAMESE_LAYERS - 1].output_dim != layer.input_dim)
 				throw invalid_argument("Layer dimensions don't match");
 
 		// Add to layers
 		layers.push_back(layer);
-		LAYERS++;
+		SIAMESE_LAYERS++;
 		// Register parameters
 		Parameter W = model.add_parameters({layer.output_dim, layer.input_dim});
 		Parameter b = model.add_parameters({layer.output_dim});
@@ -148,17 +156,22 @@ public:
 
 	void union_append(ParameterCollection& model, Layer layer) {
 		// Check compatibility
-		if (LAYERS > 0)
-			if (union_layers[LAYERS - 1].output_dim != layer.input_dim)
+		cout << "union" << endl;
+		if (UNION_LAYERS > 0)
+			if (union_layers[UNION_LAYERS - 1].output_dim != layer.input_dim)
 				throw invalid_argument("Layer dimensions don't match");
-
+		cout << "if" << endl;
 		// Add to layers
 		union_layers.push_back(layer);
-		LAYERS++;
+		cout << "push_back1" << endl;
+		UNION_LAYERS++;
 		// Register parameters
 		Parameter W = model.add_parameters({layer.output_dim, layer.input_dim});
+		cout << "model1" << endl;
 		Parameter b = model.add_parameters({layer.output_dim});
+		cout << "model2" << endl;
 		union_params.push_back({W, b});
+		cout << "push_back2" << endl;
 	}
 
 	/**
@@ -173,7 +186,7 @@ public:
 									ComputationGraph& cg) {
 		// Expression for the current hidden state
 		Expression h_cur = x;
-		for (unsigned l = 0; l < LAYERS; ++l) {
+		for (unsigned l = 0; l < SIAMESE_LAYERS; ++l) {
 			// Initialize parameters in computation graph
 			Expression W = parameter(cg, params[l][0]);
 			Expression b = parameter(cg, params[l][1]);
@@ -207,7 +220,7 @@ public:
 									ComputationGraph& cg) {
 		// Expression for the current hidden state
 		Expression h_cur = x;
-		for (unsigned l = 0; l < LAYERS; ++l) {
+		for (unsigned l = 0; l < UNION_LAYERS; ++l) {
 			// Initialize parameters in computation graph
 			Expression W = parameter(cg, union_params[l][0]);
 			Expression b = parameter(cg, union_params[l][1]);
