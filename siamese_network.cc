@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     get_args(argc, argv, params, TRAIN_SUP);
 
     unsigned batch_size = 20;
-    unsigned epoch_size = 345;
+    unsigned epoch_size = 23;
 
     // ParameterCollection name (for saving) -----------------------------------------------------------------------
 
