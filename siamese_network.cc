@@ -76,7 +76,6 @@ int main(int argc, char** argv) {
     // Run for the given number of epochs (or indefinitely if params.NUM_EPOCHS is negative)
     //while (static_cast<int>(epoch) < params.NUM_EPOCHS || params.NUM_EPOCHS < 0) {
     while(!train_file.eof()) {
-        cout << "while" << endl;
         double loss = 0;
         double num_samples = 0;
 
@@ -87,7 +86,6 @@ int main(int argc, char** argv) {
         nn.enable_dropout();
 
         for (int i = 0; i < epoch_size; ++i) {
-            cout << "for-" << i << endl;
             // build graph for this instance
             ComputationGraph cg;
             // Get input batch
