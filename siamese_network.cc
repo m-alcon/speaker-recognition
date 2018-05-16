@@ -152,7 +152,7 @@ int main(int argc, char** argv) {
         }
         // Print informations
         cerr << "\n***DEV [epoch=" << (epoch)
-            << "] E = " << (dpos / (double) train_size) << ' ';
+            << "] E = " << dpos << "/" << train_size <<  " - " << (dpos / (double) train_size) << ' ';
         // Reinitialize timer
         iteration.reset(new Timer("completed in"));
 
