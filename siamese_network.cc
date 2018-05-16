@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
         Layer(/* input_dim */ 5000, /* output_dim */ 400, /* activation */ RELU, /* dropout_rate */ 0.2),
         Layer(/* input_dim */ 400, /* output_dim */ 400, /* activation */ RELU, /* dropout_rate */ 0.0)
     }),vector<Layer>({
-         Layer(/* input_dim */ 800, /* output_dim */ 1, /* activation */ SIGMOID, /* dropout_rate */ 0.2)
+         Layer(/* input_dim */ 800, /* output_dim */ 2, /* activation */ SIGMOID, /* dropout_rate */ 0.2)
     }));
 
 
@@ -131,6 +131,7 @@ int main(int argc, char** argv) {
         // Show score on dev data
         double dpos = 0;
         unsigned train_size = 0;
+        unsigned sum_prediction = 0;
         while (test_file >> speaker1 >> speaker2 >> label) {
             // build graph for this instance
             ComputationGraph cg;
@@ -140,8 +141,10 @@ int main(int argc, char** argv) {
             // Get negative log likelihood on batch
             unsigned predicted_idx = nn.predict(x1, x2, cg);
             // Increment count of positive classification
-            if (predicted_idx == label)
+            sum_prediction += predicted_idx;
+            if (predicted_idx == label) {
                 dpos++;
+            }
             ++train_size;
         }
         // If the dev loss is lower than the previous ones, save the model
@@ -152,7 +155,7 @@ int main(int argc, char** argv) {
         }
         // Print informations
         cerr << "\n***DEV [epoch=" << (epoch)
-            << "] E = " << dpos << "/" << train_size <<  " - " << (dpos / (double) train_size) << ' ';
+            << "] E = " << (dpos / (double) train_size) << ' ';
         // Reinitialize timer
         iteration.reset(new Timer("completed in"));
 
