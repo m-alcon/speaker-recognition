@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
         Layer(/* input_dim */ 5000, /* output_dim */ 400, /* activation */ RELU, /* dropout_rate */ 0.2),
         Layer(/* input_dim */ 400, /* output_dim */ 400, /* activation */ RELU, /* dropout_rate */ 0.0)
     }),vector<Layer>({
-         Layer(/* input_dim */ 800, /* output_dim */ 2, /* activation */ SIGMOID, /* dropout_rate */ 0.2)
+         Layer(/* input_dim */ 800, /* output_dim */ 2, /* activation */ SIGMOID, /* dropout_rate */ 0.0)
     }));
 
 
@@ -155,7 +155,7 @@ int main(int argc, char** argv) {
         }
         // Print informations
         cerr << "\n***DEV [epoch=" << (epoch)
-            << "] E = " << (dpos / (double) train_size) << ' ';
+            << "] E = " << (dpos / (double) train_size) << " | " << sum_prediction << ' ';
         // Reinitialize timer
         iteration.reset(new Timer("completed in"));
 
