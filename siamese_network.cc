@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
                 Expression x1_batch = reshape(concatenate_cols(cur_batch1), Dim({16896}, batch_size));
                 Expression x2_batch = reshape(concatenate_cols(cur_batch2), Dim({16896}, batch_size));
                 // Get negative log likelihood on batch
-                Expression labels_batch = input(cg, {batch_size}, cur_labels);
+                Expression labels_batch = reshape(input(cg, {batch_size}, cur_labels), Dim({1}, batch_size));
                 Expression loss_expr = nn.get_nll(x1_batch, x2_batch, labels_batch, cg);
                 // Get scalar error for monitoring
                 loss += as_scalar(cg.forward(loss_expr));
