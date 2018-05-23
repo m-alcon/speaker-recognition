@@ -257,14 +257,15 @@ public:
 	 * \return Expression for the negative log likelihood on the batch
 	 */
 	Expression get_nll(Expression x1, Expression x2,
-										vector<unsigned> labels,
+										Expression labels,
 										ComputationGraph& cg) {
 		// compute output
 		Expression y1 = single_siamese_run(x1, cg);
 		Expression y2 = single_siamese_run(x2, cg);
 		Expression y = concatenate({y1,y2});
 		// Do softmax
-		Expression losses = pickneglogsoftmax(y, labels);
+		//Expression losses = pickneglogsoftmax(y, labels);
+		Expression losses = binary_log_loss(y, labels);
 		// Sum across batches
 		return sum_batches(losses);
 	}

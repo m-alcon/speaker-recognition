@@ -2,16 +2,23 @@ import os
 import random
 
 def randomFile(speaker,d,isTest):
-    return random.choice(d[speaker][isTest])
+    choice = random.choice(d[speaker][isTest])
+    print(choice)
+    return choice
 
 def writeExample(speaker1,speaker2,label,file):
     file.write('%s %s %d\n'%(speaker1,speaker2,label))
 
 def positiveExample(speaker,d,file,isTest):
-    f1 = randomFile(speaker,d,isTest)
-    f2 = f1
-    while f1 == f2:
-        f2 = randomFile(speaker,d,isTest)
+    if isTest:
+        i = random.randrange(0,2)
+        f1 = d[speaker][isTest][i]
+        f2 = d[speaker][isTest][not i]
+    else:
+        f1 = randomFile(speaker,d,isTest)
+        f2 = f1
+        while f1 == f2:
+            f2 = randomFile(speaker,d,isTest)
     writeExample(f1,f2,1,file)
 
 def negativeExample(speaker,d,file,isTest):
@@ -20,7 +27,8 @@ def negativeExample(speaker,d,file,isTest):
         speaker2 = random.choice(list(d.keys()))
     writeExample(randomFile(speaker,d,isTest),randomFile(speaker2,d,isTest),0,file)
 
-def createData(file,isTest):
+def createDataTrain(file):
+    isTest = 0
     n_examples = 0
     speakers = list(d.keys())
     while speakers != []:
@@ -37,6 +45,30 @@ def createData(file,isTest):
         negativeExample(speakers[i],d,file,isTest)
         del speakers[i]
         n_examples += 2
+
+def createDataTest(file):
+    isTest = 1
+    n_examples = 0
+    speakers = list(d.keys())
+    while speakers != []:
+        i = random.randrange(len(speakers))
+        positiveExample(speakers[i],d,file,isTest)
+        del speakers[i]
+        j = random.randrange(len(speakers))
+        negativeExample(speakers[j],d,file,isTest)
+        del speakers[j]
+        n_examples += 2
+    print('while1')
+    speakers = list(d.keys())
+    while n_examples%20 != 0:
+        i = random.randrange(len(speakers))
+        positiveExample(speakers[i],d,file,isTest)
+        del speakers[i]
+        j = random.randrange(len(speakers))
+        negativeExample(speakers[j],d,file,isTest)
+        del speakers[j]
+        n_examples += 2
+    print('while2')
 
 
 # DATA READING
@@ -56,20 +88,18 @@ for k in remove:
 # TRAIN AND TEST DIVISION
 for k,v in d.items():
     random.shuffle(v)
-    sep = int(len(v) * 0.75)
-    d[k] = (v[:sep],v[sep:])
+    d[k] = (v[:6],v[6:8])
 
 # BATCH CREATION
 random.seed(1996)
 
 train_file = open('train.dat','w')
-createData(train_file,0)
+createDataTrain(train_file)
 train_file.close()
 
 test_file = open('test.dat','w')
-createData(test_file,1)
+createDataTest(test_file)
 test_file.close()
-
 
 
 
