@@ -116,16 +116,16 @@ int main(int argc, char** argv) {
                 // Update parameters
                 trainer.update();
                 // Print progress every tenth of the dataset
-                //if (i % 10 == 0) {
+                if (i % 10 == 0) {
                     // Print informations
                     //trainer.status();
-                    cerr << " Loss = " << (loss / num_samples) << ' ';
+                    cerr << "[" << i*100/verification_stop << "]" << " Loss = " << (loss / num_samples) << ' ';
                     // Reinitialize timer
                     iteration.reset(new Timer("completed in"));
                     // Reinitialize loss
                     loss = 0;
                     num_samples = 0;
-                //}
+                }
             }
 
             ifstream test_file ("./scripts/test.dat", ifstream::in);
