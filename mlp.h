@@ -293,7 +293,6 @@ public:
 		// 	if (probs[i] > probs[argmax])
 		// 		argmax = i;
 		// }
-		cerr << "[Size predict: "<< probs.size() << "]" << endl;
 		return probs[0] >= 0.5f;
 	}
 
