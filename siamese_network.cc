@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
 
             // Activate dropout
             nn.enable_dropout();
-
+            cerr << "[STARTING TRAIN PHASE]" << endl;
             for (int i = 0; i < verification_stop; ++i) {
                 // build graph for this instance
                 ComputationGraph cg;
@@ -116,10 +116,10 @@ int main(int argc, char** argv) {
                 // Update parameters
                 trainer.update();
                 // Print progress every tenth of the dataset
-                if (i % 10 == 0) {
+                if (i % 3 == 0 || i == verification_stop) {
                     // Print informations
                     //trainer.status();
-                    cerr << "[" << i*100/verification_stop << "]" << " Loss = " << (loss / num_samples) << ' ';
+                    cerr << "[Process: " << i*100/verification_stop << "%]" << " Loss = " << (loss / num_samples) << ' ';
                     // Reinitialize timer
                     iteration.reset(new Timer("completed in"));
                     // Reinitialize loss
@@ -136,6 +136,7 @@ int main(int argc, char** argv) {
             double dpos = 0;
             unsigned train_size = 0;
             unsigned sum_prediction = 0;
+            cerr << "[STARTING TEST PHASE]" << endl;
             while (test_file >> speaker1 >> speaker2 >> label) {
                 // build graph for this instance
                 ComputationGraph cg;
@@ -148,6 +149,9 @@ int main(int argc, char** argv) {
                 sum_prediction += predicted_idx;
                 if (predicted_idx == label) {
                     dpos++;
+                }
+                if (train_size % 69 == 0) {
+                    cerr << "[Process: " << train_size*100/1380 << "%]";
                 }
                 ++train_size;
             }
