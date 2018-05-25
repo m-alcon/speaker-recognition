@@ -38,8 +38,8 @@ int main(int argc, char** argv) {
 
     ParameterCollection model;
     // Use Adam optimizer
-    float learning_rate = 0.00001f;
-    AdamTrainer trainer(model, learning_rate);
+    float learning_rate = 0.001f;
+    MomentumSGDTrainer trainer(model, learning_rate, 0.9);
     trainer.clip_threshold *= batch_size;
 
     // Create model
@@ -145,9 +145,9 @@ int main(int argc, char** argv) {
                 if (predicted_idx == label) {
                     dpos++;
                 }
-                if (train_size % 69 == 0) {
+                //if (train_size % 69 == 0) {
                     cerr << "\r[Process: " << train_size*100/1380 << "%]";
-                }
+                //}
                 ++train_size;
             }
             cerr << endl;

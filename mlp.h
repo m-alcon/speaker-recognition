@@ -293,7 +293,7 @@ public:
 		// 	if (probs[i] > probs[argmax])
 		// 		argmax = i;
 		// }
-		cerr << "[size=" << probs.size() << " prob=" << probs[0] << "]" << endl;
+		//cerr << "[size=" << probs.size() << " prob=" << probs[0] << "]" << endl;
 		return probs[0] >= 0.5f;
 	}
 
