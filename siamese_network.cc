@@ -119,6 +119,7 @@ int main(int argc, char** argv) {
                 //}
             }
             cerr << endl;
+            train_file.close();
 
             ifstream test_file ("./scripts/test.dat", ifstream::in);
             // Disable dropout for dev testing
@@ -159,6 +160,7 @@ int main(int argc, char** argv) {
                 << "] Accuracy = " << (dpos / (double) train_size) << " | " << sum_prediction << ' ';
             // Reinitialize timer
             iteration.reset(new Timer("completed in"));
+            test_file.close();
 
         }
     }
