@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     get_args(argc, argv, params, TRAIN_SUP);
 
     unsigned batch_size = 20;
-    unsigned verification_stop = 23;
+    unsigned verification_stop = 138;
 
     // ParameterCollection name (for saving) -----------------------------------------------------------------------
 
@@ -111,17 +111,18 @@ int main(int argc, char** argv) {
                 // Update parameters
                 trainer.update();
                 // Print progress every tenth of the dataset
-                if (i % 3 == 0 || i == verification_stop) {
+                //if (i % 3 == 0 || i == verification_stop) {
                     // Print informations
                     //trainer.status();
-                    cerr << "[Process: " << i*100/verification_stop << "%]" << " Loss = " << (loss / num_samples) << ' ';
+                    cerr << "\r[Process: " << i*100/verification_stop << "%]" << " Loss = " << (loss / num_samples);
                     // Reinitialize timer
-                    iteration.reset(new Timer("completed in"));
+                    //iteration.reset(new Timer("completed in"));
                     // Reinitialize loss
                     loss = 0;
                     num_samples = 0;
-                }
+                //}
             }
+            cerr << endl;
 
             ifstream test_file ("./scripts/test.dat", ifstream::in);
             // Disable dropout for dev testing
