@@ -75,7 +75,6 @@ int main(int argc, char** argv) {
         //while (static_cast<int>(epoch) < params.NUM_EPOCHS || params.NUM_EPOCHS < 0) {
         while(!train_file.eof()) {
             double loss = 0;
-            double num_samples = 0;
 
             // Start timer
             std::unique_ptr<Timer> iteration(new Timer("completed in"));
@@ -103,9 +102,8 @@ int main(int argc, char** argv) {
                 Expression labels_batch = reshape(input(cg, {batch_size}, cur_labels), Dim({1}, batch_size));
                 Expression loss_expr = nn.get_nll(x1_batch, x2_batch, labels_batch, cg);
                 // Get scalar error for monitoring
-                loss += as_scalar(cg.forward(loss_expr));
+                loss = as_scalar(cg.forward(loss_expr));
                 // Increment number of samples processed
-                num_samples += batch_size;
                 // Compute gradient with backward pass
                 cg.backward(loss_expr);
                 // Update parameters
@@ -114,12 +112,10 @@ int main(int argc, char** argv) {
                 //if (i % 3 == 0 || i == verification_stop) {
                     // Print informations
                     //trainer.status();
-                    cerr << "\r[Process: " << i*100/verification_stop << "%]" << " Loss = " << (loss / num_samples);
+                    cerr << "\r[Process: " << i*100/verification_stop << "%]" << " Loss = " << (loss / batch_size);
                     // Reinitialize timer
                     //iteration.reset(new Timer("completed in"));
                     // Reinitialize loss
-                    loss = 0;
-                    num_samples = 0;
                 //}
             }
             cerr << endl;
