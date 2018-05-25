@@ -152,8 +152,8 @@ int main(int argc, char** argv) {
             // If the dev loss is lower than the previous ones, save the model
             if (dpos > worst) {
                 worst = dpos;
-                TextFileSaver saver(fname);
-                saver.save(model);
+                //TextFileSaver saver(fname);
+                //saver.save(model);
             }
             // Print informations
             cerr << "\n***DEV [epoch=" << (epoch)
