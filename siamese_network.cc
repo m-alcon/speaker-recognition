@@ -151,10 +151,11 @@ int main(int argc, char** argv) {
                     dpos++;
                 }
                 if (train_size % 69 == 0) {
-                    cerr << "[Process: " << train_size*100/1380 << "%]" << endl;
+                    cerr << "\r[Process: " << train_size*100/1380 << "%]";
                 }
                 ++train_size;
             }
+            cerr << endl;
             // If the dev loss is lower than the previous ones, save the model
             if (dpos > worst) {
                 worst = dpos;
