@@ -30,10 +30,6 @@ int main(int argc, char** argv) {
     ostringstream os;
     // Store a bunch of information in the model name
     os << "siamese_network"
-        << "_" << "mlp"
-        << "_" << 16896 << "-" << 5000 << "-relu-" << 0.2
-        << "_" << 5000 << "-" << 400 << "-relu-" << 0.2
-        << "_" << 400 << "-" << 400 << "-softmax"
         << "_" << getpid()
         << ".params";
     const string fname = os.str();
@@ -48,10 +44,10 @@ int main(int argc, char** argv) {
 
     // Create model
     MLP nn(model, vector<Layer>({
-        Layer(/* input_dim */ 16896, /* output_dim */ 5000, /* activation */ RELU, /* dropout_rate */ 0.2),
-        Layer(/* input_dim */ 5000, /* output_dim */ 5000, /* activation */ RELU, /* dropout_rate */ 0.2),
-        Layer(/* input_dim */ 5000, /* output_dim */ 1000, /* activation */ RELU, /* dropout_rate */ 0.2),
-        Layer(/* input_dim */ 1000, /* output_dim */ 5000, /* activation */ RELU, /* dropout_rate */ 0.2),
+        Layer(/* input_dim */ 16896, /* output_dim */ 5000, /* activation */ RELU, /* dropout_rate */ 0.0),
+        Layer(/* input_dim */ 5000, /* output_dim */ 5000, /* activation */ RELU, /* dropout_rate */ 0.0),
+        Layer(/* input_dim */ 5000, /* output_dim */ 1000, /* activation */ RELU, /* dropout_rate */ 0.0),
+        Layer(/* input_dim */ 1000, /* output_dim */ 5000, /* activation */ RELU, /* dropout_rate */ 0.0),
         Layer(/* input_dim */ 5000, /* output_dim */ 5000, /* activation */ RELU, /* dropout_rate */ 0.0),
     }),vector<Layer>({
          Layer(/* input_dim */ 10000, /* output_dim */ 1000, /* activation */ RELU, /* dropout_rate */ 0.0),
