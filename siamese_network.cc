@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
                 dpos++;
             }
             //if (train_size % 69 == 0) {
-                cerr << "\r[Process: " << train_size*100/1380 << "%]";
+                cerr << "\r[Process: " << train_size*100/800 << "%]";
             //}
             ++train_size;
         }
