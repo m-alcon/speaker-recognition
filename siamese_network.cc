@@ -80,11 +80,11 @@ int main(int argc, char** argv) {
 
         // Run for the given number of epochs (or indefinitely if params.NUM_EPOCHS is negative)
         //while (static_cast<int>(epoch) < params.NUM_EPOCHS || params.NUM_EPOCHS < 0) {
+        cerr << "[STARTING TRAIN PHASE]" << endl;
         while(!train_file.eof()) {
 
             // Activate dropout
             nn.enable_dropout();
-            cerr << "[STARTING TRAIN PHASE]" << endl;
             // build graph for this instance
             ComputationGraph cg;
             // Get input batch
