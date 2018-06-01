@@ -22,9 +22,9 @@ int main(int argc, char** argv) {
 
     get_args(argc, argv, params, TRAIN_SUP);
 
-    unsigned batch_size = 20;
-    unsigned verification_stop = 138;
-
+    unsigned batch_size = 40;
+    unsigned epoch_size = 2500;
+    unsigned validation_size = 500*batch_size;
     // ParameterCollection name (for saving) -----------------------------------------------------------------------
 
     ostringstream os;
@@ -65,23 +65,20 @@ int main(int argc, char** argv) {
     double worst = 0;
 
     vector<Expression> cur_batch1, cur_batch2;
-    vector<float> cur_labels;
+    vector<unsigned> cur_labels;
+
+    vector<vector<vector<float>>> train_data = loadData("train");
+    vector<vector<vector<float>>> test_data = loadData("test");
 
     for (unsigned epoch = 0; epoch < 100; ++epoch) {
-        ifstream train_file ("./scripts/train.dat", ifstream::in);
-        string speaker1, speaker2;
-        float label;
-
         double loss = 0;
-        unsigned i = 0;
 
         // Start timer
         std::unique_ptr<Timer> iteration(new Timer("completed in"));
 
         // Run for the given number of epochs (or indefinitely if params.NUM_EPOCHS is negative)
         //while (static_cast<int>(epoch) < params.NUM_EPOCHS || params.NUM_EPOCHS < 0) {
-        cerr << "[STARTING TRAIN PHASE]" << endl;
-        while(!train_file.eof()) {
+        for (unsigned i; i < epoch_size; ++i) {
 
             // Activate dropout
             nn.enable_dropout();
@@ -90,19 +87,23 @@ int main(int argc, char** argv) {
             // Get input batch
             cur_batch1 = vector<Expression>(batch_size);
             cur_batch2 = vector<Expression>(batch_size);
-            cur_labels = vector<float>(batch_size);
-            for (int j = 0; j < batch_size; ++j) {
-                train_file >> speaker1 >> speaker2 >> label;
-                cur_batch1[j] = input(cg, {16896}, readSpeakerFile(speaker1));
-                cur_batch2[j] = input(cg, {16896}, readSpeakerFile(speaker2));
-                cur_labels[j] = label;
+            cur_labels = vector<unsigned>(batch_size);
+            for (int j = 0; j < batch_size; j+=2) {
+                vector<float> positive1, positive2, negative1, negative2;
+                generateExample(train_data, positive1, positive2, negative1, negative2);
+                cur_batch1[j] = input(cg, {16896}, positive1);
+                cur_batch2[j] = input(cg, {16896}, positive2);
+                cur_labels[j] = 1;
+                cur_batch1[j+1] = input(cg, {16896}, negative1);
+                cur_batch2[j+1] = input(cg, {16896}, negative2);
+                cur_labels[j+1] = 0;
             }
             // Reshape as batch (not very intuitive yet)
             Expression x1_batch = reshape(concatenate_cols(cur_batch1), Dim({16896}, batch_size));
             Expression x2_batch = reshape(concatenate_cols(cur_batch2), Dim({16896}, batch_size));
             // Get negative log likelihood on batch
-            Expression labels_batch = reshape(input(cg, {batch_size}, cur_labels), Dim({1}, batch_size));
-            Expression loss_expr = nn.get_nll(x1_batch, x2_batch, labels_batch, cg);
+            //Expression labels_batch = reshape(input(cg, {batch_size}, cur_labels), Dim({1}, batch_size));
+            Expression loss_expr = nn.get_nll(x1_batch, x2_batch, cur_labels, cg);
             // Get scalar error for monitoring
             loss = as_scalar(cg.forward(loss_expr));
             // Increment number of samples processed
@@ -114,15 +115,13 @@ int main(int argc, char** argv) {
             //if (i % 3 == 0 || i == verification_stop) {
                 // Print informations
                 //trainer.status();
-                cerr << "\r[Process: " << i*100/(2760/20) << "%]" << " Loss = " << (loss / batch_size);
+                cerr << "\r[TRAIN epoch="<< epoch <<"] Process: " << i*100/(2760/20) << "% | " << " Loss = " << (loss / batch_size);
                 // Reinitialize timer
                 //iteration.reset(new Timer("completed in"));
                 // Reinitialize loss
             //}
-            ++i;
         }
         cerr << endl;
-        train_file.close();
 
         ifstream test_file ("./scripts/test.dat", ifstream::in);
         // Disable dropout for dev testing
@@ -130,26 +129,37 @@ int main(int argc, char** argv) {
 
         // Show score on dev data
         double dpos = 0;
-        unsigned train_size = 0;
         unsigned sum_prediction = 0;
-        cerr << "[STARTING TEST PHASE]" << endl;
-        while (test_file >> speaker1 >> speaker2 >> label) {
+        for (unsigned i = 0; i < validation_size; i+=2) {
             // build graph for this instance
             ComputationGraph cg;
             // Get input expression
-            Expression x1 = input(cg, {16896}, readSpeakerFile(speaker1));
-            Expression x2 = input(cg, {16896}, readSpeakerFile(speaker2));
-            // Get negative log likelihood on batch
+            vector<float> positive1, positive2, negative1, negative2;
+            generateExample(train_data, positive1, positive2, negative1, negative2);
+
+            Expression x1 = input(cg, {16896}, positive1);
+            Expression x2 = input(cg, {16896}, positive2);
             unsigned predicted_idx = nn.predict(x1, x2, cg);
             // Increment count of positive classification
             sum_prediction += predicted_idx;
-            if (predicted_idx == label) {
+            if (predicted_idx == 1) {
                 dpos++;
             }
             //if (train_size % 69 == 0) {
-                cerr << "\r[Process: " << train_size*100/800 << "%]";
+                cerr << "\r[DEV epoch="<< epoch << "] Process: " << i*100/validation_size << "%";
             //}
-            ++train_size;
+
+            Expression x3 = input(cg, {16896}, negative1);
+            Expression x4 = input(cg, {16896}, negative2);
+            predicted_idx = nn.predict(x3, x4, cg);
+            // Increment count of positive classification
+            sum_prediction += predicted_idx;
+            if (predicted_idx == 0) {
+                dpos++;
+            }
+            //if (train_size % 69 == 0) {
+                cerr << "\r[DEV epoch="<< epoch << "] Process: " << (i+1)*100/validation_size << "%";
+            //}
         }
         cerr << endl;
         // If the dev loss is lower than the previous ones, save the model
@@ -160,7 +170,7 @@ int main(int argc, char** argv) {
         }
         // Print informations
         cerr << "\n***DEV [epoch=" << (epoch)
-            << "] Accuracy = " << (dpos / (double) train_size) << " | " << sum_prediction << ' ';
+            << "] Accuracy = " << (dpos / (double) validation_size) << " | " << sum_prediction << ' ';
         // Reinitialize timer
         iteration.reset(new Timer("completed in"));
         test_file.close();

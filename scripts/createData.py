@@ -70,7 +70,6 @@ def createDataTest(file):
         n_examples += 2
     print('while2')
 
-
 # DATA READING
 d = {}
 for line in open('../data/2004-2008_labels_final.ndx','r'):
@@ -85,21 +84,40 @@ remove = [k for k,v in d.items() if len(v) < 8]
 for k in remove:
     del d[k]
 
-# TRAIN AND TEST DIVISION
-for k,v in d.items():
-    random.shuffle(v)
-    d[k] = (v[:6],v[6:8])
+# AUX READ C++
+speakers = list(d.keys())
+random.shuffle(speakers)
+barrier = int( len(speakers)*0.8)
 
-# BATCH CREATION
-random.seed(1996)
+loader_train = open('loader-train.dat','w')
+for speaker in speakers[:barrier]:
+    for sfile in d[speaker]:
+        loader_train.write(sfile)
+    loader_train.write("\n")
+loader_train.close()
 
-train_file = open('train.dat','w')
-createDataTrain(train_file)
-train_file.close()
+loader_test = open('loader-test.dat','w')
+for speaker in speakers[barrier:]:
+    for sfile in d[speaker]:
+        loader_test.write(sfile)
+    loader_test.write("\n")
 
-test_file = open('test.dat','w')
-createDataTest(test_file)
-test_file.close()
+# # TRAIN AND TEST DIVISION
+# for k,v in d.items():
+#     random.shuffle(v)
+#     d[k] = (v[:6],v[6:8])
+
+# # BATCH CREATION
+# random.seed(1996)
+
+# train_file = open('train.dat','w')
+# createDataTrain(train_file)
+# train_file.close()
+
+# test_file = open('test.dat','w')
+# createDataTest(test_file)
+# test_file.close()
+
 
 
 
