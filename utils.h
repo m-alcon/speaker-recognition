@@ -26,7 +26,7 @@ vector<vector<vector<float>>> loadData (const string &name) {
     vector<vector<vector<float>>> data = vector<vector<vector<float>>> (size);
     unsigned i = 0;
     while(getline(file,line)) {
-        cout << "\r["<< i*100/size <<"%] Loading " << name << " data";
+        cout << "\r["<< i*100/size <<"% Loading " << name << " data";
         istringstream iss(line);
         string speaker_file;
         vector<vector<float>> speaker_data = vector<vector<float>> ();
