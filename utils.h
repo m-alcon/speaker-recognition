@@ -21,11 +21,12 @@ vector<vector<vector<float>>> loadData (const string &name) {
     unsigned size = 1097;
     if(name == "test") size = 275;
 
-    ifstream file("./scripts/loader_"+name+".dat");
+    ifstream file("./scripts/loader-"+name+".dat");
     string line;
     vector<vector<vector<float>>> data = vector<vector<vector<float>>> (size);
     unsigned i = 0;
     while(getline(file,line)) {
+        cout << "\r["<< i*100/size <<"%] Loading " << name << " data";
         istringstream iss(line);
         string speaker_file;
         vector<vector<float>> speaker_data = vector<vector<float>> ();

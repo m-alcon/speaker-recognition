@@ -92,14 +92,14 @@ barrier = int( len(speakers)*0.8)
 loader_train = open('loader-train.dat','w')
 for speaker in speakers[:barrier]:
     for sfile in d[speaker]:
-        loader_train.write(sfile)
+        loader_train.write(sfile+' ')
     loader_train.write("\n")
 loader_train.close()
 
 loader_test = open('loader-test.dat','w')
 for speaker in speakers[barrier:]:
     for sfile in d[speaker]:
-        loader_test.write(sfile)
+        loader_test.write(sfile+' ')
     loader_test.write("\n")
 
 # # TRAIN AND TEST DIVISION
