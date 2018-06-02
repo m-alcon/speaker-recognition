@@ -30,7 +30,7 @@ vector<vector<vector<float>>> loadData (const string &name) {
 
     ifstream file("./scripts/loader-"+name+".dat");
     string line;
-    vector<vector<vector<float>>> data = vector<vector<vector<float>>> ();
+    vector<vector<vector<float>>> data = vector<vector<vector<float>>> (size);
     unsigned i = 0;
     while(getline(file,line)) {
         cerr << "\r["<< i*100/size <<"%] Loading " << name << " data";
@@ -41,7 +41,7 @@ vector<vector<vector<float>>> loadData (const string &name) {
             vector<float> single_file = readSpeakerFile(speaker_file);
             speaker_data.push_back(single_file);
         }
-        data.push_back(speaker_data);
+        data[i] = speaker_data;
         ++i;
     }
     cerr << endl;
@@ -49,23 +49,29 @@ vector<vector<vector<float>>> loadData (const string &name) {
 }
 
 Example generateExample(vector<vector<vector<float>>> &data) {
-
+    cerr << "====== GENERATE EXAMPLE ======" << endl;
     Example res;
     srand (time(NULL));
     int speaker1 = rand() % (data.size()+1);
+    cerr << "[" << data[speaker1].size() << "] speaker1=" << speaker1;
     int speaker2 = rand() % (data.size()+1);
     while (speaker1 == speaker2) {
         speaker2 = rand() % (data.size()+1);
     }
+    cerr << "[" << data[speaker2].size() << "] speaker2=" << speaker2;
     int file1 = rand() % (data[speaker1].size()+1);
     res.positive1 = &(data[speaker1][file1]);
     int file2 = rand() % (data[speaker1].size()+1);
     res.positive2 = &(data[speaker1][file2]);
 
+    cerr << "p1=" << file1;
+    cerr << "p2=" << file2;
     file1 = rand() % (data[speaker1].size()+1);
     res.negative1 = &(data[speaker1][file1]);
     file2 = rand() % (data[speaker2].size()+1);
     res.negative2 = &(data[speaker2][file2]);
+    cerr << "n1=" << file1;
+    cerr << "n2=" << file2;
     return res;
 }
 

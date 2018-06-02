@@ -79,20 +79,15 @@ int main(int argc, char** argv) {
         cerr << "epoch"<< epoch << "loop" << endl;
         nn.enable_dropout();
         // Activate dropout
-        cerr << "dropout" << endl;
         // Run for the given number of epochs (or indefinitely if params.NUM_EPOCHS is negative)
         //while (static_cast<int>(epoch) < params.NUM_EPOCHS || params.NUM_EPOCHS < 0) {
         for (unsigned i = 0; i < epoch_size; ++i) {
             // build graph for this instance
             ComputationGraph cg;
-            cerr << "cg" << endl;
             // Get input batch
             cur_batch1 = vector<Expression>(batch_size);
-            cerr << "b1" << endl;
             cur_batch2 = vector<Expression>(batch_size);
-            cerr << "b2" << endl;
             cur_labels = vector<float>(batch_size);
-            cerr << "batch loop" << endl;
             for (int j = 0; j < batch_size; j+=2) {
                 Example ex = generateExample(train_data);
                 cerr << "POSITIVE1 " << (*ex.positive1).size() << endl;
@@ -100,44 +95,29 @@ int main(int argc, char** argv) {
                 cerr << "NEGATIVE1 " << (*ex.negative1).size() << endl;
                 cerr << "NEGATIVE2 " << (*ex.negative2).size() << endl;
                 Expression ep1 = input(cg, {16896}, *ex.positive1);
-                cerr << "input" << endl;
                 cur_batch1[j] = ep1;
-                cerr << "positive1" << endl;
                 Expression ep2 = input(cg, {16896}, *ex.positive2);
-                cerr << "input" << endl;
                 cur_batch2[j] = ep2;
-                cerr << "positive2" << endl;
                 cur_labels[j] = 1.0f;
                 Expression en1 = input(cg, {16896}, *ex.negative1);
-                cerr << "input" << endl;
                 cur_batch1[j+1] = en1;
-                cerr << "negative1" << endl;
                 Expression en2 = input(cg, {16896}, *ex.negative2);
-                cerr << "input" << endl;
                 cur_batch2[j+1] = en2;
-                cerr << "negative2 " << endl;
                 cur_labels[j+1] = 0.0f;
             }
             // Reshape as batch (not very intuitive yet)
             Expression x1_batch = reshape(concatenate_cols(cur_batch1), Dim({16896}, batch_size));
-            cerr << "reshape1" << endl;
             Expression x2_batch = reshape(concatenate_cols(cur_batch2), Dim({16896}, batch_size));
-            cerr << "reshape2" << endl;
             // Get negative log likelihood on batch
             Expression labels_batch = reshape(input(cg, {batch_size}, cur_labels), Dim({1}, batch_size));
-            cerr << "reshape labels" << endl;
             Expression loss_expr = nn.get_nll(x1_batch, x2_batch, labels_batch, cg);
-            cerr << "getnll" << endl;
             // Get scalar error for monitoring
             loss = as_scalar(cg.forward(loss_expr));
-            cerr << "as_scalar" << endl;
             // Increment number of samples processed
             // Compute gradient with backward pass
             cg.backward(loss_expr);
-            cerr << "backward" << endl;
             // Update parameters
             trainer.update();
-            cerr << "update" << endl;
             // Print progress every tenth of the dataset
             //if (i % 3 == 0 || i == verification_stop) {
                 // Print informations
