@@ -263,6 +263,7 @@ public:
 		Expression y_mix = concatenate({y1,y2});
 		Expression y = union_run(y_mix,cg);
 		// Do softmax
+		cerr << "labels" << labels.size() << endl;
 		Expression losses = pickneglogsoftmax(y, labels);
 		//Expression losses = binary_log_loss(y, labels);
 		// Sum across batches
