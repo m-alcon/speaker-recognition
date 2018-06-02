@@ -95,24 +95,27 @@ int main(int argc, char** argv) {
             cerr << "batch loop" << endl;
             for (int j = 0; j < batch_size; j+=2) {
                 Example ex = generateExample(train_data);
-                cerr << "generateExample" << endl;
+                cerr << "POSITIVE1 " << (*ex.positive1).size() << endl;
+                cerr << "POSITIVE2 " << (*ex.positive2).size() << endl;
+                cerr << "NEGATIVE1 " << (*ex.negative1).size() << endl;
+                cerr << "NEGATIVE2 " << (*ex.negative2).size() << endl;
                 Expression ep1 = input(cg, {16896}, *ex.positive1);
                 cerr << "input" << endl;
                 cur_batch1[j] = ep1;
-                cerr << "positive1" << (*ex.positive1).size() << endl;
+                cerr << "positive1" << endl;
                 Expression ep2 = input(cg, {16896}, *ex.positive2);
                 cerr << "input" << endl;
                 cur_batch2[j] = ep2;
-                cerr << "positive2" << (*ex.positive2).size() << endl;
+                cerr << "positive2" << endl;
                 cur_labels[j] = 1.0f;
                 Expression en1 = input(cg, {16896}, *ex.negative1);
                 cerr << "input" << endl;
                 cur_batch1[j+1] = en1;
-                cerr << "negative1" << (*ex.negative1).size() << endl;
+                cerr << "negative1" << endl;
                 Expression en2 = input(cg, {16896}, *ex.negative2);
                 cerr << "input" << endl;
                 cur_batch2[j+1] = en2;
-                cerr << "negative2 " << (*ex.negative2).size() << endl;
+                cerr << "negative2 " << endl;
                 cur_labels[j+1] = 0.0f;
             }
             // Reshape as batch (not very intuitive yet)
@@ -139,7 +142,7 @@ int main(int argc, char** argv) {
             //if (i % 3 == 0 || i == verification_stop) {
                 // Print informations
                 //trainer.status();
-                cerr << "\r[TRAIN epoch="<< epoch <<"] Process: " << i*100/(2760/20) << "% | " << " Loss = " << (loss / batch_size);
+                cerr << "\r[TRAIN epoch="<< epoch <<"] Process: " << i*100/epoch_size << "% | " << " Loss = " << (loss / batch_size);
                 // Reinitialize timer
                 //iteration.reset(new Timer("completed in"));
                 // Reinitialize loss
