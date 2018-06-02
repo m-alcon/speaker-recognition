@@ -6,10 +6,10 @@
 using namespace std;
 
 struct Example {
-    vector<float> *positive1;
-    vector<float> *positive2;
-    vector<float> *negative1;
-    vector<float> *negative2;
+    vector<float> positive1;
+    vector<float> positive2;
+    vector<float> negative1;
+    vector<float> negative2;
 };
 
 vector<float> readSpeakerFile (string speaker) {
@@ -58,14 +58,14 @@ Example generateExample(vector<vector<vector<float>>> &data) {
         speaker2 = rand() % (data.size()+1);
     }
     int file1 = rand() % (data[speaker1].size()+1);
-    res.positive1 = &(data[speaker1][file1]);
+    res.positive1 = data[speaker1][file1];
     int file2 = rand() % (data[speaker1].size()+1);
-    res.positive2 = &data[speaker1][file2];
+    res.positive2 = data[speaker1][file2];
 
     file1 = rand() % (data[speaker1].size()+1);
-    res.negative1 = &data[speaker1][file1];
+    res.negative1 = data[speaker1][file1];
     file2 = rand() % (data[speaker2].size()+1);
-    res.negative2 = &data[speaker2][file2];
+    res.negative2 = data[speaker2][file2];
     return res;
 }
 
