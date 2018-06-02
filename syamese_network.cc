@@ -96,14 +96,14 @@ int main(int argc, char** argv) {
             for (int j = 0; j < batch_size; j+=2) {
                 Example ex = generateExample(train_data);
                 cerr << "generateExample" << endl;
-                cur_batch1[j] = input(cg, {16896}, ex.positive1);
+                cur_batch1[j] = input(cg, {16896}, *ex.positive1);
                 cerr << "positive1" << j << endl;
-                cur_batch2[j] = input(cg, {16896}, ex.positive2);
+                cur_batch2[j] = input(cg, {16896}, *ex.positive2);
                 cerr << "positive2" << j << endl;
                 cur_labels[j] = 1.0f;
-                cur_batch1[j+1] = input(cg, {16896}, ex.negative1);
+                cur_batch1[j+1] = input(cg, {16896}, *ex.negative1);
                 cerr << "negative1" << j+1 << endl;
-                cur_batch2[j+1] = input(cg, {16896}, ex.negative2);
+                cur_batch2[j+1] = input(cg, {16896}, *ex.negative2);
                 cerr << "negative2 " << j+1 << endl;
                 cur_labels[j+1] = 0.0f;
             }
@@ -149,8 +149,8 @@ int main(int argc, char** argv) {
             // Get input expression
             Example ex = generateExample(test_data);
 
-            Expression x1 = input(cg, {16896}, ex.positive1);
-            Expression x2 = input(cg, {16896}, ex.positive2);
+            Expression x1 = input(cg, {16896}, *ex.positive1);
+            Expression x2 = input(cg, {16896}, *ex.positive2);
             unsigned predicted_idx = nn.predict(x1, x2, cg);
             // Increment count of positive classification
             sum_prediction += predicted_idx;
@@ -161,8 +161,8 @@ int main(int argc, char** argv) {
                 cerr << "\r[DEV epoch="<< epoch << "] Process: " << i*100/validation_size << "%";
             //}
 
-            Expression x3 = input(cg, {16896}, ex.negative1);
-            Expression x4 = input(cg, {16896}, ex.negative2);
+            Expression x3 = input(cg, {16896}, *ex.negative1);
+            Expression x4 = input(cg, {16896}, *ex.negative2);
             predicted_idx = nn.predict(x3, x4, cg);
             // Increment count of positive classification
             sum_prediction += predicted_idx;
