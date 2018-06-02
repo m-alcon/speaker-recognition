@@ -22,6 +22,7 @@ int main(int argc, char** argv) {
 
     get_args(argc, argv, params, TRAIN_SUP);
 
+    unsigned total_epoch = 100;
     unsigned batch_size = 40;
     unsigned epoch_size = 2500;
     unsigned validation_size = 500*batch_size;
@@ -70,7 +71,7 @@ int main(int argc, char** argv) {
     vector<vector<vector<float>>> train_data = loadData("train");
     vector<vector<vector<float>>> test_data = loadData("test");
     cerr << "epoch loop" << endl;
-    for (unsigned epoch = 0; epoch < 100; ++epoch) {
+    for (unsigned epoch = 0; epoch < total_epoch; ++epoch) {
         double loss = 0;
 
         // Start timer
