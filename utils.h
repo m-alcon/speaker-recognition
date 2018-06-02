@@ -30,7 +30,7 @@ vector<vector<vector<float>>> loadData (const string &name) {
 
     ifstream file("./scripts/loader-"+name+".dat");
     string line;
-    vector<vector<vector<float>>> data = vector<vector<vector<float>>> (size);
+    vector<vector<vector<float>>> data = vector<vector<vector<float>>> ();
     unsigned i = 0;
     while(getline(file,line)) {
         cerr << "\r["<< i*100/size <<"%] Loading " << name << " data";
@@ -41,7 +41,7 @@ vector<vector<vector<float>>> loadData (const string &name) {
             vector<float> single_file = readSpeakerFile(speaker_file);
             speaker_data.push_back(single_file);
         }
-        data[i] = speaker_data;
+        data.push_back(speaker_data);
         ++i;
     }
     cerr << endl;
