@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
 
     get_args(argc, argv, params, TRAIN_SUP);
 
-    unsigned total_epoch = 100;
+    unsigned total_epoch = 1000;
     unsigned batch_size = 40;
     unsigned epoch_size = 2500;
     unsigned validation_size = 500*batch_size;
