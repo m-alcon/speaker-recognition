@@ -116,14 +116,17 @@ int main(int argc, char** argv) {
             Expression labels_batch = reshape(input(cg, {batch_size}, cur_labels), Dim({1}, batch_size));
             cerr << "reshape labels" << endl;
             Expression loss_expr = nn.get_nll(x1_batch, x2_batch, labels_batch, cg);
-            cerr << "generateExample" << endl;
+            cerr << "getnll" << endl;
             // Get scalar error for monitoring
             loss = as_scalar(cg.forward(loss_expr));
+            cerr << "as_scalar" << endl;
             // Increment number of samples processed
             // Compute gradient with backward pass
             cg.backward(loss_expr);
+            cerr << "backward" << endl;
             // Update parameters
             trainer.update();
+            cerr << "update" << endl;
             // Print progress every tenth of the dataset
             //if (i % 3 == 0 || i == verification_stop) {
                 // Print informations
@@ -136,7 +139,6 @@ int main(int argc, char** argv) {
         }
         cerr << endl;
 
-        ifstream test_file ("./scripts/test.dat", ifstream::in);
         // Disable dropout for dev testing
         nn.disable_dropout();
 
@@ -185,6 +187,5 @@ int main(int argc, char** argv) {
             << "] Accuracy = " << (dpos / (double) validation_size) << " | " << sum_prediction << ' ';
         // Reinitialize timer
         iteration.reset(new Timer("completed in"));
-        test_file.close();
     }
 }
