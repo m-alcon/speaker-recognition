@@ -90,10 +90,10 @@ int main(int argc, char** argv) {
             cur_labels = vector<float>(batch_size);
             for (int j = 0; j < batch_size; j+=2) {
                 Example ex = generateExample(train_data);
-                cerr << "POSITIVE1 " << (*ex.positive1).size() << endl;
-                cerr << "POSITIVE2 " << (*ex.positive2).size() << endl;
-                cerr << "NEGATIVE1 " << (*ex.negative1).size() << endl;
-                cerr << "NEGATIVE2 " << (*ex.negative2).size() << endl;
+                //cerr << "POSITIVE1 " << (*ex.positive1).size() << endl;
+                //cerr << "POSITIVE2 " << (*ex.positive2).size() << endl;
+                //cerr << "NEGATIVE1 " << (*ex.negative1).size() << endl;
+                //cerr << "NEGATIVE2 " << (*ex.negative2).size() << endl;
                 Expression ep1 = input(cg, {16896}, *ex.positive1);
                 cur_batch1[j] = ep1;
                 Expression ep2 = input(cg, {16896}, *ex.positive2);
