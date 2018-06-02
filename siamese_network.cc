@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
         cerr << "epoch"<< epoch << "loop" << endl;
         // Run for the given number of epochs (or indefinitely if params.NUM_EPOCHS is negative)
         //while (static_cast<int>(epoch) < params.NUM_EPOCHS || params.NUM_EPOCHS < 0) {
-        for (unsigned i; i < epoch_size; ++i) {
+        for (unsigned i = 0; i < epoch_size; ++i) {
 
             // Activate dropout
             nn.enable_dropout();
