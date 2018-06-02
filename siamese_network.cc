@@ -69,13 +69,13 @@ int main(int argc, char** argv) {
 
     vector<vector<vector<float>>> train_data = loadData("train");
     vector<vector<vector<float>>> test_data = loadData("test");
-
+    cerr << "epoch loop" << endl;
     for (unsigned epoch = 0; epoch < 100; ++epoch) {
         double loss = 0;
 
         // Start timer
         std::unique_ptr<Timer> iteration(new Timer("completed in"));
-
+        cerr << "epoch"<< epoch << "loop" << endl;
         // Run for the given number of epochs (or indefinitely if params.NUM_EPOCHS is negative)
         //while (static_cast<int>(epoch) < params.NUM_EPOCHS || params.NUM_EPOCHS < 0) {
         for (unsigned i; i < epoch_size; ++i) {
@@ -88,6 +88,7 @@ int main(int argc, char** argv) {
             cur_batch1 = vector<Expression>(batch_size);
             cur_batch2 = vector<Expression>(batch_size);
             cur_labels = vector<unsigned>(batch_size);
+            cerr << "batch loop" << endl;
             for (int j = 0; j < batch_size; j+=2) {
                 vector<float> positive1, positive2, negative1, negative2;
                 generateExample(train_data, positive1, positive2, negative1, negative2);
