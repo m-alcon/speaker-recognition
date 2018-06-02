@@ -70,19 +70,17 @@ int main(int argc, char** argv) {
 
     vector<vector<vector<float>>> train_data = loadData("train");
     vector<vector<vector<float>>> test_data = loadData("test");
-    cerr << "epoch loop" << endl;
     for (unsigned epoch = 0; epoch < total_epoch; ++epoch) {
-        double loss = 0;
 
         // Start timer
         std::unique_ptr<Timer> iteration(new Timer("completed in"));
-        cerr << "epoch"<< epoch << "loop" << endl;
         nn.enable_dropout();
         // Activate dropout
         // Run for the given number of epochs (or indefinitely if params.NUM_EPOCHS is negative)
         //while (static_cast<int>(epoch) < params.NUM_EPOCHS || params.NUM_EPOCHS < 0) {
         for (unsigned i = 0; i < epoch_size; ++i) {
             // build graph for this instance
+            double loss = 0;
             ComputationGraph cg;
             // Get input batch
             cur_batch1 = vector<Expression>(batch_size);
