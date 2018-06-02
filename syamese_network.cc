@@ -95,19 +95,28 @@ int main(int argc, char** argv) {
             cerr << "batch loop" << endl;
             for (int j = 0; j < batch_size; j+=2) {
                 Example ex = generateExample(train_data);
+                cerr << "generateExample" << endl;
                 cur_batch1[j] = input(cg, {16896}, *ex.positive1);
+                cerr << "positive1" << endl;
                 cur_batch2[j] = input(cg, {16896}, *ex.positive2);
+                cerr << "positive2" << endl;
                 cur_labels[j] = 1.0f;
                 cur_batch1[j+1] = input(cg, {16896}, *ex.negative1);
+                cerr << "negative1" << endl;
                 cur_batch2[j+1] = input(cg, {16896}, *ex.negative2);
+                cerr << "negative2" << endl;
                 cur_labels[j+1] = 0.0f;
             }
             // Reshape as batch (not very intuitive yet)
             Expression x1_batch = reshape(concatenate_cols(cur_batch1), Dim({16896}, batch_size));
+            cerr << "reshape1" << endl;
             Expression x2_batch = reshape(concatenate_cols(cur_batch2), Dim({16896}, batch_size));
+            cerr << "reshape2" << endl;
             // Get negative log likelihood on batch
             Expression labels_batch = reshape(input(cg, {batch_size}, cur_labels), Dim({1}, batch_size));
+            cerr << "reshape labels" << endl;
             Expression loss_expr = nn.get_nll(x1_batch, x2_batch, labels_batch, cg);
+            cerr << "getnll" << endl;
             // Get scalar error for monitoring
             loss = as_scalar(cg.forward(loss_expr));
             // Increment number of samples processed
