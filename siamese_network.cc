@@ -82,11 +82,15 @@ int main(int argc, char** argv) {
 
             // Activate dropout
             nn.enable_dropout();
+            cerr << "dropout" << endl;
             // build graph for this instance
             ComputationGraph cg;
+            cerr << "cg" << endl;
             // Get input batch
             cur_batch1 = vector<Expression>(batch_size);
+            cerr << "b1" << endl;
             cur_batch2 = vector<Expression>(batch_size);
+            cerr << "b2" << endl;
             cur_labels = vector<unsigned>(batch_size);
             cerr << "batch loop" << endl;
             for (int j = 0; j < batch_size; j+=2) {
