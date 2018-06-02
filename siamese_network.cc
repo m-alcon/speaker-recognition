@@ -90,13 +90,12 @@ int main(int argc, char** argv) {
             cur_labels = vector<unsigned>(batch_size);
             cerr << "batch loop" << endl;
             for (int j = 0; j < batch_size; j+=2) {
-                vector<float> positive1, positive2, negative1, negative2;
-                generateExample(train_data, positive1, positive2, negative1, negative2);
-                cur_batch1[j] = input(cg, {16896}, positive1);
-                cur_batch2[j] = input(cg, {16896}, positive2);
+                Example ex = generateExample(train_data);
+                cur_batch1[j] = input(cg, {16896}, *ex.positive1);
+                cur_batch2[j] = input(cg, {16896}, *ex.positive2);
                 cur_labels[j] = 1;
-                cur_batch1[j+1] = input(cg, {16896}, negative1);
-                cur_batch2[j+1] = input(cg, {16896}, negative2);
+                cur_batch1[j+1] = input(cg, {16896}, *ex.negative1);
+                cur_batch2[j+1] = input(cg, {16896}, *ex.negative2);
                 cur_labels[j+1] = 0;
             }
             // Reshape as batch (not very intuitive yet)
@@ -135,11 +134,10 @@ int main(int argc, char** argv) {
             // build graph for this instance
             ComputationGraph cg;
             // Get input expression
-            vector<float> positive1, positive2, negative1, negative2;
-            generateExample(train_data, positive1, positive2, negative1, negative2);
+            Example ex = generateExample(test_data);
 
-            Expression x1 = input(cg, {16896}, positive1);
-            Expression x2 = input(cg, {16896}, positive2);
+            Expression x1 = input(cg, {16896}, *ex.positive1);
+            Expression x2 = input(cg, {16896}, *ex.positive2);
             unsigned predicted_idx = nn.predict(x1, x2, cg);
             // Increment count of positive classification
             sum_prediction += predicted_idx;
@@ -150,8 +148,8 @@ int main(int argc, char** argv) {
                 cerr << "\r[DEV epoch="<< epoch << "] Process: " << i*100/validation_size << "%";
             //}
 
-            Expression x3 = input(cg, {16896}, negative1);
-            Expression x4 = input(cg, {16896}, negative2);
+            Expression x3 = input(cg, {16896}, *ex.negative1);
+            Expression x4 = input(cg, {16896}, *ex.negative2);
             predicted_idx = nn.predict(x3, x4, cg);
             // Increment count of positive classification
             sum_prediction += predicted_idx;

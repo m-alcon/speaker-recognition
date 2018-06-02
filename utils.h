@@ -5,6 +5,13 @@
 
 using namespace std;
 
+struct Example {
+    vector<float> *positive1;
+    vector<float> *positive2;
+    vector<float> *negative1;
+    vector<float> *negative2;
+};
+
 vector<float> readSpeakerFile (string speaker) {
 
     ifstream speaker_file("./data/train/"+speaker+".sv", ifstream::in);
@@ -41,26 +48,25 @@ vector<vector<vector<float>>> loadData (const string &name) {
     return data;
 }
 
-void generateExample(const vector<vector<vector<float>>> &data,
-    vector<float> &positive1, vector<float> &positive2,
-    vector<float> &negative1, vector<float> &negative2) {
+Example generateExample(vector<vector<vector<float>>> &data) {
 
+    Example res;
     srand (time(NULL));
-
     int speaker1 = rand() % (data.size()+1);
     int speaker2 = rand() % (data.size()+1);
     while (speaker1 == speaker2) {
         speaker2 = rand() % (data.size()+1);
     }
     int file1 = rand() % (data[speaker1].size()+1);
-    positive1 = data[speaker1][file1];
+    res.positive1 = &(data[speaker1][file1]);
     int file2 = rand() % (data[speaker1].size()+1);
-    positive2 = data[speaker1][file2];
+    res.positive2 = &data[speaker1][file2];
 
     file1 = rand() % (data[speaker1].size()+1);
-    negative1 = data[speaker1][file1];
+    res.negative1 = &data[speaker1][file1];
     file2 = rand() % (data[speaker2].size()+1);
-    negative2 = data[speaker2][file2];
+    res.negative2 = &data[speaker2][file2];
+    return res;
 }
 
 #endif
