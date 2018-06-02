@@ -264,7 +264,7 @@ public:
 		Expression y = union_run(y_mix,cg);
 		// Do softmax
 		cerr << "labels" << labels.size() << endl;
-		Expression losses = pickneglogsoftmax(y, labels);
+		Expression losses = pickneglogsoftmax(reshape(y,Dim({40},1)), labels);
 		//Expression losses = binary_log_loss(y, labels);
 		// Sum across batches
 		return sum_batches(losses);
