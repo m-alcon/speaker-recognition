@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
 
     ostringstream os;
     // Store a bunch of information in the model name
-    os << "siamese_network"
+    os << "syamese_network"
         << "_" << getpid()
         << ".params";
     const string fname = os.str();
@@ -76,13 +76,12 @@ int main(int argc, char** argv) {
         // Start timer
         std::unique_ptr<Timer> iteration(new Timer("completed in"));
         cerr << "epoch"<< epoch << "loop" << endl;
+        nn.enable_dropout();
+        // Activate dropout
+        cerr << "dropout" << endl;
         // Run for the given number of epochs (or indefinitely if params.NUM_EPOCHS is negative)
         //while (static_cast<int>(epoch) < params.NUM_EPOCHS || params.NUM_EPOCHS < 0) {
         for (unsigned i = 0; i < epoch_size; ++i) {
-
-            // Activate dropout
-            nn.enable_dropout();
-            cerr << "dropout" << endl;
             // build graph for this instance
             ComputationGraph cg;
             cerr << "cg" << endl;
