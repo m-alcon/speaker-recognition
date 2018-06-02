@@ -96,14 +96,18 @@ int main(int argc, char** argv) {
             for (int j = 0; j < batch_size; j+=2) {
                 Example ex = generateExample(train_data);
                 cerr << "generateExample" << endl;
-                cur_batch1[j] = input(cg, {16896}, *ex.positive1);
+                Expression ep1 = input(cg, {16896}, *ex.positive1);
+                cur_batch1[j] = ep1;
                 cerr << "positive1" << j << endl;
-                cur_batch2[j] = input(cg, {16896}, *ex.positive2);
+                Expression ep2 = input(cg, {16896}, *ex.positive2);
+                cur_batch2[j] = ep2;
                 cerr << "positive2" << j << endl;
                 cur_labels[j] = 1.0f;
-                cur_batch1[j+1] = input(cg, {16896}, *ex.negative1);
+                Expression en1 = input(cg, {16896}, *ex.negative1);
+                cur_batch1[j+1] = en1;
                 cerr << "negative1" << j+1 << endl;
-                cur_batch2[j+1] = input(cg, {16896}, *ex.negative2);
+                Expression en2 = input(cg, {16896}, *ex.negative2);
+                cur_batch2[j+1] = en2;
                 cerr << "negative2 " << j+1 << endl;
                 cur_labels[j+1] = 0.0f;
             }
