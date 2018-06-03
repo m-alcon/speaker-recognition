@@ -262,6 +262,7 @@ public:
 		Expression y2 = single_siamese_run(x2, cg);
 		Expression y_mix = concatenate({y1,y2});
 		Expression y = union_run(y_mix,cg);
+		Expression y_resh = reshape(y,Dim({40}));
 		// Do softmax
 		Expression losses = pickneglogsoftmax(y, labels);
 		//Expression losses = binary_log_loss(y, labels);

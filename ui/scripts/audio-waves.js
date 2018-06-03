@@ -46,6 +46,16 @@ let hoverRun = 0;
 let readyToRun = [false,false,false,false];
 let runColor = normalColor;
 
+
+let MESSAGES = {
+    init: "SPEAKERS, CHOICE YOUR VOICES",
+    leftSpeaker: "LEFT SPEAKER, CHOICE YOUR VOICE",
+    rightSpeaker: "RIGHT SPEAKER, CHOICE YOUR VOICE",
+    run: "YOU ARE READY TO RUN IT",
+    different: "DIFFERENT SPEAKERS",
+    equal: "SAME SPEAKERS"
+}
+
 let KEYFRAMES = {
     out: [
         {opacity: 1},
@@ -113,20 +123,20 @@ function fadeOutTextAnimation() {
 function changeGuideTitle() {
     if (isReadyToRun()) {
         if (runResult == "") {
-            guideTitle.textContent = "YOU ARE READY TO RUN IT";
+            guideTitle.textContent = MESSAGES.run;
         }
         else {
             guideTitle.textContent = runResult;
         }
     }
     else if (!isReadyToRun()) {
-        guideTitle.textContent = "SPEAKERS, CHOICE YOUR VOICES";
+        guideTitle.textContent = MESSAGES.init;
     }
     else if (!readyToRun[0]) {
-        guideTitle.textContent = "LEFT SPEAKER, CHOICE YOUR VOICE";
+        guideTitle.textContent = MESSAGES.leftSpeaker;
     }
     else {
-        guideTitle.textContent = "RIGHT SPEAKER, CHOICE YOUR VOICE";
+        guideTitle.textContent = MESSAGES.rightSpeaker;
     }
 }
 
@@ -489,10 +499,10 @@ function initEvents() {
                 console.log(`stdout: ${stdout}`);
                 console.log(`stderr: ${stderr}`);
                 if (stdout == 0) {
-                    runResult = "DIFFERENT SPEAKERS"
+                    runResult = MESSAGES.different;
                 }
                 else {
-                    runResult = "SAME SPEAKER"
+                    runResult = MESSAGES.equal;
                 }
                 isRunning = false;
                 blockRestart(false);
