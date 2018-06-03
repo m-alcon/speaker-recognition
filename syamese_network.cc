@@ -63,7 +63,8 @@ int main(int argc, char** argv) {
 
     // Initialize variables for training -------------------------------------------------------------
     // Worst accuracy
-    double worst = 0;
+    double best_accuracy = 0;
+    unsigned count_from_best_accuracy = 0;
 
     vector<Expression> cur_batch1, cur_batch2;
     vector<unsigned> cur_labels;
@@ -166,10 +167,17 @@ int main(int argc, char** argv) {
         }
         cerr << endl;
         // If the dev loss is lower than the previous ones, save the model
-        if (dpos > worst) {
-            worst = dpos;
+        if (dpos > best_accuracy) {
+            best_accuracy = dpos;
             TextFileSaver saver(fname);
-            //saver.save(model);
+            count_from_best_accuracy = 0;
+            saver.save(model);
+        }
+        else {
+            ++count_from_best_accuracy;
+            if (count_from_best_accuracy >= 10) {
+                return 0;
+            }
         }
         // Print informations
         cerr << "[DEV epoch=" << (epoch)
