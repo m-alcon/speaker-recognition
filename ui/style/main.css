@@ -24,6 +24,7 @@ h1 {
     font-weight: normal;
     color: white;
     margin: 0 auto;
+    opacity: 0;
 }
 
 h2 {
@@ -144,8 +145,8 @@ canvas#audioWave {
 .circle {
     background: white;
     border-radius: 100%;
-    -webkit-transition: border-radius 0.5s, background-color 0.5s;
-    transition: border-radius 0.5s, background-color 0.5s;
+    -webkit-transition: border-radius 0.5s, background-color 0.5s, height 0.5s, width 0.5s;
+    transition: border-radius 0.5s, background-color 0.5s, height 0.5s, width 0.5s;
 }
 
 .pushable:hover > .circle{
@@ -198,8 +199,8 @@ canvas#audioWave {
     border-top: 40% solid transparent;
     border-bottom: 40% solid transparent;
     border-left: 40% solid white;
-    -webkit-transition: border-left-color 0.5s;
-    transition: border-left-color 0.5s;
+    -webkit-transition: border-left-color 0.5s, border-left-width 0.5s;
+    transition: border-left-color 0.5s, border-left-width 0.5s;
 }
 
 /* Icons */
@@ -219,10 +220,12 @@ canvas#audioWave {
 
 #restart i {
     font-size: 5vmin;
-    -webkit-transition: color 0.5s;
-    transition: color 0.5s;
+    -webkit-transition: color 0.5s, font-size 0.5s;
+    transition: color 0.5s, font-size 0.5s;
 }
-
+#restart i:hover  {
+    font-size: 5.5vmin;
+}
 #restart.blocked {
     color: rgb(70, 70, 70);
     cursor: default;
@@ -258,6 +261,25 @@ canvas#audioWave {
     border-bottom-left-radius: 100000px;
     border-top-left-radius: 100000px;
     margin-right: 2px;
+}
+
+/* Option */
+
+select {
+    position: relative;
+    height: 65%;
+    width: fit-content;
+    background-color: transparent;
+    border-width: 0.5vmin;
+    border-color: white;
+    font-family: "Moon Lower";
+    color: white;
+    font-size: 3vmin;
+    text-align: center;
+}
+
+select:hover {
+    cursor: pointer;
 }
 
 /* ANIMATIONS */

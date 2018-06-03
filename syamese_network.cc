@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
 
     ParameterCollection model;
     // Use Adam optimizer
-    float learning_rate = 0.0001f;
+    float learning_rate = 0.001f;
     MomentumSGDTrainer trainer(model, learning_rate, 0.9);
     trainer.clip_threshold *= batch_size;
 
@@ -71,10 +71,10 @@ int main(int argc, char** argv) {
 
     vector<vector<vector<float>>> train_data = loadData("train");
     vector<vector<vector<float>>> test_data = loadData("test");
+    std::unique_ptr<Timer> iteration(new Timer("completed in"));
     for (unsigned epoch = 0; epoch < total_epoch; ++epoch) {
 
         // Start timer
-        std::unique_ptr<Timer> iteration(new Timer("completed in"));
         nn.enable_dropout();
         // Activate dropout
         // Run for the given number of epochs (or indefinitely if params.NUM_EPOCHS is negative)

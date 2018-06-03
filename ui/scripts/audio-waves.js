@@ -25,8 +25,10 @@ let record1 = document.getElementById("record1");
 let record2 = document.getElementById("record2");
 let run = document.getElementById("run");
 let inside_run = run.getElementsByClassName("triangle")[0];
-let title1 = document.getElementById("title1");
-let title2 = document.getElementById("title2");
+//let title1 = document.getElementById("title1");
+//let title2 = document.getElementById("title2");
+let select1 = document.getElementById("select1");
+let select2 = document.getElementById("select2");
 let guideTitle = document.getElementById("guide");
 let underRun = document.getElementById("under-run");
 let adviser = document.getElementById("adviser");
@@ -60,12 +62,12 @@ function blockSpeaker1(wantBlock) {
     if (wantBlock) {
         isActive_2 = true;
         record1.classList.add("blocked");
-        title1.style.color = blockColor;
+        //title1.style.color = blockColor;
     }
     else {
         isActive_2 = false;
         record1.classList.remove("blocked");
-        title1.style.color = normalColor;
+        //title1.style.color = normalColor;
     }
 }
 
@@ -73,12 +75,12 @@ function blockSpeaker2(wantBlock) {
     if (wantBlock) {
         isActive_1 = true;
         record2.classList.add("blocked");
-        title2.style.color = blockColor;
+        //title2.style.color = blockColor;
     }
     else {
         isActive_1 = false;
         record2.classList.remove("blocked");
-        title2.style.color = normalColor;
+        //title2.style.color = normalColor;
     }
 }
 
@@ -113,13 +115,13 @@ function changeGuideTitle() {
         }
     }
     else if (!readyToRun[0] && !readyToRun[1]) {
-        guideTitle.textContent = "SPEAKERS, RECORD YOUR VOICES";
+        guideTitle.textContent = "SPEAKERS, CHOICE YOUR VOICES";
     }
     else if (!readyToRun[0]) {
-        guideTitle.textContent = "ALICE, RECORD YOUR VOICE";
+        guideTitle.textContent = "LEFT SPEAKER, CHOICE YOUR VOICE";
     }
     else {
-        guideTitle.textContent = "BOB, RECORD YOUR VOICE";
+        guideTitle.textContent = "RIGHT SPEAKER, CHOICE YOUR VOICE";
     }
 }
 
@@ -149,7 +151,7 @@ function restartAdvisers () {
     restartAdviser(1);
 }
 
-function blockRun(wantBlock) {
+function blockRunStart(wantBlock) {
     if (wantBlock) {
         readyToRun[0] = false;
         readyToRun[1] = false;
@@ -167,10 +169,10 @@ function blockRun(wantBlock) {
         run.style.borderColor = blockColor;
         inside_run.style.borderLeftColor = blockColor;
     }
-    console.log("wtfmaaan");
+}
+function blockRun(wantBlock) {
+    blockRunStart(wantBlock);
     guideAnimOut = setInterval(fadeOutTextAnimation(),10);
-    console.log("ruserious");
-    console.log("pid out: " + guideAnimOut);
 }
 
 function changeRunButtonSize(size) {
@@ -429,6 +431,29 @@ function initConfiguration() {
     changeAdviserColor();
 }
 
+function initConfigurationStart() {
+    isActive_1 = false;
+    isActive_2 = false;
+    isRunning = false;
+    lastActive = 0;
+    hoverRun = 0;
+    readyToRun = [false,false];
+    runColor = normalColor;
+    //guideAlpha = 0;
+    runResult = "";
+
+    blockRestart(false);
+    blockSpeaker1(false);
+    blockSpeaker2(false);
+    blockRunStart(true);
+    guideAnimIn = setInterval(fadeInTextAnimation(),10);
+    guideTitle.style.opacity = "1";
+    restart.style.display = "none";
+    underRun.style.justifyContent = "center";
+    changeButtonSize();
+    changeAdviserColor();
+}
+
 function initEvents() {
     run.onclick = () => {
         if (readyToRun[0] && readyToRun[1] && !isRunning && !isActive_1 && !isActive_2) {
@@ -436,8 +461,8 @@ function initEvents() {
             blockRestart(true);
             blockSpeaker1(true);
             blockSpeaker2(true);
-            title1.style.color = blockColor;
-            title2.style.color = blockColor;
+            //title1.style.color = blockColor;
+            //title2.style.color = blockColor;
             run.classList.add("animated");
             exec('./bin/checkspeakers', (err, stdout, stderr) => {
                 if (err) {
@@ -475,7 +500,7 @@ function initEvents() {
 }
 
 function init() {
-    initConfiguration();
+    initConfigurationStart();
     initEvents();
     initAudio();
 }

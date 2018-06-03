@@ -102,6 +102,22 @@ for speaker in speakers[barrier:]:
         loader_test.write(sfile+' ')
     loader_test.write("\n")
 
+# DATA FOR APP READING
+d = {}
+for line in open('../data/targets_condition5_new.ndx','r'):
+    id, file = line.split()
+    if id in d:
+        d[id].append(file)
+    else:
+        d[id] = [file]
+
+app = open('../ui/app-speakers.dat','w')
+for i,speaker in enumerate(list(d.keys())):
+    line = "speaker%d "%i
+    for sfile in d[speaker]:
+        line += sfile+' '
+    app.write(line[:-1] + '\n')
+
 # # TRAIN AND TEST DIVISION
 # for k,v in d.items():
 #     random.shuffle(v)
