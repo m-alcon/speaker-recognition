@@ -96,12 +96,12 @@ int main(int argc, char** argv) {
                 cur_batch1[j] = ep1;
                 Expression ep2 = input(cg, {16896}, *ex.positive2);
                 cur_batch2[j] = ep2;
-                cur_labels[j] = 1.0f;
+                cur_labels[j] = 1;
                 Expression en1 = input(cg, {16896}, *ex.negative1);
                 cur_batch1[j+1] = en1;
                 Expression en2 = input(cg, {16896}, *ex.negative2);
                 cur_batch2[j+1] = en2;
-                cur_labels[j+1] = 0.0f;
+                cur_labels[j+1] = 0;
             }
             // Reshape as batch (not very intuitive yet)
             Expression x1_batch = reshape(concatenate_cols(cur_batch1), Dim({16896}, batch_size));

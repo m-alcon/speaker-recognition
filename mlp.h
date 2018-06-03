@@ -170,7 +170,7 @@ public:
 	 *
 	 * \return [description]
 	 */
-	Expression single_siamese_run(Expression x,
+	Expression single_siamese_run(const Expression &x,
 									ComputationGraph& cg) {
 		// Expression for the current hidden state
 		Expression h_cur = x;
@@ -204,7 +204,7 @@ public:
 		return h_cur;
 	}
 
-	Expression union_run(Expression x,
+	Expression union_run(const Expression &x,
 									ComputationGraph& cg) {
 		// Expression for the current hidden state
 		Expression h_cur = x;
@@ -256,7 +256,7 @@ public:
 	 * \param cg Computation graph
 	 * \return Expression for the negative log likelihood on the batch
 	 */
-	Expression get_nll(Expression x1, Expression x2, vector<unsigned> labels,ComputationGraph& cg) {
+	Expression get_nll(const Expression &x1, const Expression &x2, const vector<unsigned> labels, ComputationGraph& cg) {
 		// compute output
 		Expression y1 = single_siamese_run(x1, cg);
 		Expression y2 = single_siamese_run(x2, cg);
@@ -278,7 +278,7 @@ public:
 	 *
 	 * \return Label index
 	 */
-	int predict(Expression x1, Expression x2,
+	int predict(const Expression &x1, const Expression &x2,
 							ComputationGraph& cg) {
 		// run MLP to get class distribution
 		Expression y1 = single_siamese_run(x1, cg);
