@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
 
     ParameterCollection model;
     // Use Adam optimizer
-    float learning_rate = 0.001f;
+    float learning_rate = 0.0001f;
     MomentumSGDTrainer trainer(model, learning_rate, 0.9);
     trainer.clip_threshold *= batch_size;
 
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
     double worst = 0;
 
     vector<Expression> cur_batch1, cur_batch2;
-    vector<float> cur_labels;
+    vector<unsigned> cur_labels;
 
     vector<vector<vector<float>>> train_data = loadData("train");
     vector<vector<vector<float>>> test_data = loadData("test");
@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
             // Get input batch
             cur_batch1 = vector<Expression>(batch_size);
             cur_batch2 = vector<Expression>(batch_size);
-            cur_labels = vector<float>(batch_size);
+            cur_labels = vector<unsigned>(batch_size);
             for (int j = 0; j < batch_size; j+=2) {
                 Example ex = generateExample(train_data);
                 //cerr << "POSITIVE1 " << (*ex.positive1).size() << endl;
@@ -107,8 +107,8 @@ int main(int argc, char** argv) {
             Expression x1_batch = reshape(concatenate_cols(cur_batch1), Dim({16896}, batch_size));
             Expression x2_batch = reshape(concatenate_cols(cur_batch2), Dim({16896}, batch_size));
             // Get negative log likelihood on batch
-            Expression labels_batch = reshape(input(cg, {batch_size}, cur_labels), Dim({1}, batch_size));
-            Expression loss_expr = nn.get_nll(x1_batch, x2_batch, labels_batch, cg);
+            //Expression labels_batch = reshape(input(cg, {batch_size}, cur_labels), Dim({1}, batch_size));
+            Expression loss_expr = nn.get_nll(x1_batch, x2_batch, cur_labels, cg);
             // Get scalar error for monitoring
             loss = as_scalar(cg.forward(loss_expr));
             // Increment number of samples processed
@@ -172,9 +172,10 @@ int main(int argc, char** argv) {
             //saver.save(model);
         }
         // Print informations
-        cerr << "\n***DEV [epoch=" << (epoch)
+        cerr << "[DEV epoch=" << (epoch)
             << "] Accuracy = " << (dpos / (double) validation_size) << " | " << sum_prediction << ' ';
         // Reinitialize timer
         iteration.reset(new Timer("completed in"));
+        cerr << endl;
     }
 }
