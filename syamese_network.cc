@@ -171,9 +171,11 @@ int main(int argc, char** argv) {
             best_accuracy = dpos;
             TextFileSaver saver(fname);
             count_from_best_accuracy = 0;
+            cerr << "[SAVE epoch=" << epoch << " Accuracy: " << best_accuracy/ (double) validation_size << "]" << endl;
             saver.save(model);
         }
         else {
+            cerr << "[COUNT epoch=" << epoch << " count=" << count_from_best_accuracy << "]" << endl;
             ++count_from_best_accuracy;
             if (count_from_best_accuracy >= 10) {
                 return 0;
