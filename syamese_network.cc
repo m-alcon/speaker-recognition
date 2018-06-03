@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
     unsigned count_from_best_accuracy = 0;
 
     vector<Expression> cur_batch1, cur_batch2;
-    vector<unsigned> cur_labels;
+    vector<float> cur_labels;
 
     vector<vector<vector<float>>> train_data = loadData("train");
     vector<vector<vector<float>>> test_data = loadData("test");
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
             // Get input batch
             cur_batch1 = vector<Expression>(batch_size);
             cur_batch2 = vector<Expression>(batch_size);
-            cur_labels = vector<unsigned>(batch_size);
+            cur_labels = vector<float>(batch_size);
             for (int j = 0; j < batch_size; j+=2) {
                 Example ex = generateExample(train_data);
                 //cerr << "POSITIVE1 " << (*ex.positive1).size() << endl;
@@ -97,19 +97,19 @@ int main(int argc, char** argv) {
                 cur_batch1[j] = ep1;
                 Expression ep2 = input(cg, {16896}, *ex.positive2);
                 cur_batch2[j] = ep2;
-                cur_labels[j] = 1;
+                cur_labels[j] = 1.0f;
                 Expression en1 = input(cg, {16896}, *ex.negative1);
                 cur_batch1[j+1] = en1;
                 Expression en2 = input(cg, {16896}, *ex.negative2);
                 cur_batch2[j+1] = en2;
-                cur_labels[j+1] = 0;
+                cur_labels[j+1] = 0.0f;
             }
             // Reshape as batch (not very intuitive yet)
             Expression x1_batch = reshape(concatenate_cols(cur_batch1), Dim({16896}, batch_size));
             Expression x2_batch = reshape(concatenate_cols(cur_batch2), Dim({16896}, batch_size));
             // Get negative log likelihood on batch
-            //Expression labels_batch = reshape(input(cg, {batch_size}, cur_labels), Dim({1}, batch_size));
-            Expression loss_expr = nn.get_nll(x1_batch, x2_batch, cur_labels, cg);
+            Expression labels_batch = reshape(input(cg, {batch_size}, cur_labels), Dim({1}, batch_size));
+            Expression loss_expr = nn.get_nll(x1_batch, x2_batch, labels_batch, cg);
             // Get scalar error for monitoring
             loss = as_scalar(cg.forward(loss_expr));
             // Increment number of samples processed
