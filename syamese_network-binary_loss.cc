@@ -178,6 +178,7 @@ int main(int argc, char** argv) {
             ++count_from_best_accuracy;
             cerr << "[COUNT epoch=" << epoch << " count=" << count_from_best_accuracy << "]" << endl;
             if (count_from_best_accuracy >= 10) {
+                cerr << "[BEST" << " Accuracy: " << best_accuracy/ (double) validation_size << "]" << endl;
                 return 0;
             }
         }
