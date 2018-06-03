@@ -3,3 +3,8 @@ obj/*
 bin/*
 .vscode/*
 Makefile
+ui/fonts
+ui/audio/*
+ui/.vscode
+ui/package-lock.json
+ui/node_modules

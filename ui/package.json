@@ -1,0 +1,17 @@
+{
+  "name": "speaker-recognizer",
+  "version": "0.1.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Miguel Alcón Doganoc",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^2.0.2"
+  },
+  "dependencies": {
+    "blob-to-buffer": "^1.2.7"
+  }
+}

@@ -1,0 +1,25 @@
+@font-face {
+    font-family: "Ailerons";
+    src: url("../fonts/Ailerons/Ailerons-Typeface.otf");
+}
+
+@font-face {
+    font-family: "Moon Lower";
+    src: url("../fonts/Moon/Moon2.0-Regular.otf");
+}
+@font-face {
+    font-family: "Moon Lower";
+    src: url(".../fonts/Moon/Moon2.0-Bold.otf");
+    font-weight: bold;
+}
+
+@font-face {
+    font-family: "Moon Upper";
+    src: url("../fonts/Moon/Legacy MOON Files/Moon Light.otf");
+}
+
+@font-face {
+    font-family: "Moon Upper";
+    src: url("../fonts/Moon/Legacy MOON Files/Moon Bold.otf");
+    font-weight: bold;
+}
