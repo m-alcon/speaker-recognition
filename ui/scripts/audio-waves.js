@@ -4,7 +4,7 @@ const {exec} = require("child_process");
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+let audioContext = new window.AudioContext;
 let audioInput = null,
     realAudioInput = null,
     inputPoint = null,
@@ -20,6 +20,9 @@ let canvas = null;
 let blockColor = "rgb(70, 70, 70)";
 let normalColor = "white";
 let adviserColors = ["aqua","blue"];
+var extraStyle = document.createElement("style");
+document.head.appendChild(extraStyle);
+extraStyle = extraStyle.sheet
 
 let play1 = document.getElementById("play1");
 let play2 = document.getElementById("play2");
@@ -28,8 +31,8 @@ let inside_play = [
     play1.getElementsByTagName("div")[0],
     play2.getElementsByTagName("div")[0]
 ]
-//let title1 = document.getElementById("title1");
-//let title2 = document.getElementById("title2");
+
+let speakerData = []
 let speaker1 = document.getElementById("speaker1");
 let speaker2 = document.getElementById("speaker2");
 let speaker1file = document.getElementById("file1");
@@ -38,15 +41,15 @@ let guideTitle = document.getElementById("guide");
 let underRun = document.getElementById("under-run");
 let adviser = document.getElementById("adviser");
 let restart = document.getElementById("restart");
-let isActive_1 = false;
-let isActive_2 = false;
+let isActivePlay = [false,false];
+let isBlockedPlay = [false,false];
 let isRunning = false;
-let lastActive = 0;
-let hoverRun = 0;
 let readyToRun = [false,false,false,false];
-let runColor = normalColor;
-
-
+let audioPlayer1 = {obj: null,source: null}
+let audioPlayer2 = {obj: null,source: null}
+let audioNull = {obj: null,source: null}
+let actualAudio = {obj: null,source: null}
+let wantedMessage = "";
 let MESSAGES = {
     init: "SPEAKERS, CHOICE YOUR VOICES",
     leftSpeaker: "LEFT SPEAKER, CHOICE YOUR VOICE",
@@ -69,33 +72,59 @@ let KEYFRAMES = {
 
 let runResult = "";
 
+// SPEAKER LIST
 
+function createSpeakerList() {
+    fs.readFile("./scripts/app-speakers.dat", "utf-8" , (err, data) => {
+        if (err) throw err;
+        data = data.split("\n");
+        for (let i = 0; i < data.length; ++i) {
+            data[i] = data[i].split(" ");
+        }
+        console.log(data[3]);
+        speakerData = data;
+    });
+}
 
 // VISUAL
 
-function blockSpeaker1(wantBlock) {
-    if (wantBlock) {
-        isActive_2 = true;
+function blockPlayer1(wantBlock) {
+    if (wantBlock == null) {
+        if (!isBlockedPlay[0] && !isActivePlay[1]) {
+            play1.classList.remove("blocked");
+        }
+        else if (isBlockedPlay[0] || isActivePlay[1]) {
+            play1.classList.add("blocked");
+        }
+    }
+    else if (wantBlock) {
+        isBlockedPlay[0] = true;
         play1.classList.add("blocked");
-        //title1.style.color = blockColor;
     }
     else {
-        isActive_2 = false;
-        play1.classList.remove("blocked");
-        //title1.style.color = normalColor;
+        isBlockedPlay[0] = false;
+        if (!isActivePlay[1])
+            play1.classList.remove("blocked");
     }
 }
 
-function blockSpeaker2(wantBlock) {
-    if (wantBlock) {
-        isActive_1 = true;
+function blockPlayer2(wantBlock) {
+    if (wantBlock == null) {
+        if (!isBlockedPlay[1] && !isActivePlay[0]) {
+            play2.classList.remove("blocked");
+        }
+        else if (isBlockedPlay[1] || isActivePlay[0]) {
+            play2.classList.add("blocked");
+        }
+    }
+    else if (wantBlock) {
+        isBlockedPlay[1] = true;
         play2.classList.add("blocked");
-        //title2.style.color = blockColor;
     }
     else {
-        isActive_1 = false;
-        play2.classList.remove("blocked");
-        //title2.style.color = normalColor;
+        isBlockedPlay[1] = false;
+        if (!isActivePlay[0])
+            play2.classList.remove("blocked");
     }
 }
 
@@ -109,13 +138,13 @@ function blockRestart (wantBlock) {
 }
 
 function fadeInTextAnimation() {
-    var animIn = guideTitle.animate(KEYFRAMES.in, 1000);
+    var animIn = guideTitle.animate(KEYFRAMES.in, 250);
 }
 
 function fadeOutTextAnimation() {
-    var animOut = guideTitle.animate(KEYFRAMES.out, 1000);
+    var animOut = guideTitle.animate(KEYFRAMES.out, 250);
     animOut.onfinish = () => {
-        changeGuideTitle();
+        guideTitle.textContent = wantedMessage;
         fadeInTextAnimation();
     }
 }
@@ -123,34 +152,58 @@ function fadeOutTextAnimation() {
 function changeGuideTitle() {
     if (isReadyToRun()) {
         if (runResult == "") {
-            guideTitle.textContent = MESSAGES.run;
+            wantedMessage = MESSAGES.run;
         }
         else {
-            guideTitle.textContent = runResult;
+            wantedMessage = runResult;
         }
     }
-    else if (!isReadyToRun()) {
-        guideTitle.textContent = MESSAGES.init;
+    else if (!readyToRun[1] && readyToRun[3]) {
+        wantedMessage = MESSAGES.leftSpeaker;
     }
-    else if (!readyToRun[0]) {
-        guideTitle.textContent = MESSAGES.leftSpeaker;
+    else if (!readyToRun[3] && readyToRun[1]) {
+        wantedMessage = MESSAGES.rightSpeaker;
     }
-    else {
-        guideTitle.textContent = MESSAGES.rightSpeaker;
+    else if (!readyToRun[1] && !readyToRun[3]) {
+        wantedMessage = MESSAGES.init;
     }
 }
 
 function afterResultChanges() {
     restart.style.display = "block";
     underRun.style.justifyContent = "space-between";
+    changeGuideTitle();
     guideAnimOut = setInterval(fadeOutTextAnimation(),10);
     console.log("pid out: " + guideAnimOut);
 }
 
-function changeAdviserColor() {
+function changeColors() {
+    // adviser colors
     let rand = Math.floor(Math.random() * 166);
-    adviserColors[0] =  "hsl( " + (180-rand) + ", 100%, 50%)";
-    adviserColors[1] =  "hsl( " + (180+rand) + ", 100%, 50%)";
+    let color1 = "hsl( " + (180-rand-10) + ", 100%, 50%)";
+    let color2 = "hsl( " + (180+rand+10) + ", 100%, 50%)";
+    adviserColors[0] =  color1;
+    adviserColors[1] =  color2;
+
+    // selectors outline colors
+    speaker1.style.outlineColor = color1;
+    speaker1file.style.outlineColor = color1;
+    speaker2.style.outlineColor = color2;
+    speaker2file.style.outlineColor = color2;
+    if (extraStyle.cssRules.length > 0) {
+        extraStyle.deleteRule(2);
+        extraStyle.deleteRule(1);
+        extraStyle.deleteRule(0);
+    }
+    extraStyle.insertRule("#play1.pushable.active .inside-pushable "+
+        "{border-left-color: " + color1 + "}",0);
+    extraStyle.insertRule("#play2.pushable.active .inside-pushable "+
+        "{border-left-color: " + color2 + "}",1);
+    // run animation colors
+    extraStyle.insertRule("@keyframes changeColor {" +
+        "0% {color: "+ color1 + ";}" +
+        "50% {color: "+ color2 + ";}" +
+        "100% {color: "+ color1 + ";}}",2);
 }
 
 function highlightAdviser(num) {
@@ -166,45 +219,19 @@ function restartAdvisers () {
     restartAdviser(1);
 }
 
-function blockRunStart(wantBlock) {
-    if (wantBlock) {
-        modifyReadyToRun(false);
-        restartAdvisers();
-    }
-    console.log("isready" + isReadyToRun());
-    if (isReadyToRun()) {
+function blockRun() {
+    if (isReadyToRun() && !isActivePlay[0] && !isActivePlay[1]) {
         run.classList.remove("blocked");
-        runColor = normalColor;
         run.style.borderColor = normalColor;
     }
     else {
         run.classList.add("blocked");
-        runColor = blockColor;
         run.style.borderColor = blockColor;
     }
+    changeGuideTitle();
+    if (guideTitle.textContent != wantedMessage)
+        guideAnimOut = setInterval(fadeOutTextAnimation(),10);
 }
-function blockRun(wantBlock) {
-    blockRunStart(wantBlock);
-    guideAnimOut = setInterval(fadeOutTextAnimation(),10);
-}
-
-// function changePlayButtonSize(size) {
-//     if (!size) {
-//         size = window.innerWidth <= window.innerHeight ? window.innerWidth : window.innerHeight;
-//         size = size*0.5*0.3;
-//     }
-//     if (readyToRun[0] && readyToRun[1]) {
-//         size = size + (size * hoverRun * 0.15)
-//     }
-
-//     var halfSize = (size*0.5*0.4).toString() + "px  solid transparent";
-//     inside_run.style.borderTop = halfSize;
-//     inside_run.style.borderBottom = halfSize;
-//     inside_run.style.borderLeftWidth = (size*0.4).toString() + "px";
-//     inside_run.style.borderLeftStyle = "solid";
-//     inside_run.style.borderLeftStyle = runColor;
-// }
-
 
 function changeButtonSize() {
     var size = window.innerWidth <= window.innerHeight ? window.innerWidth : window.innerHeight;
@@ -219,29 +246,15 @@ function changeButtonSize() {
     underRun.style.width = circleSize;
     adviser.style.width = (size*0.3).toString() + "px";
     adviser.style.height = (size*0.3).toString() + "px";
-    //changePlayButtonSize(size);
 }
 
 function onResize() {
-    //if (isHorizontal && window.innerWidth < widthTh) {
-        canvasWidth = canvas.clientWidth;//canvas.clientWidth;
-        canvasHeight = 1024;
+    canvasWidth = canvas.clientWidth;
+    canvasHeight = 1024;
 
-        analyserContext.canvas.width = canvasWidth;
-        analyserContext.canvas.height = canvasHeight;
-        //isHorizontal = !isHorizontal
-        isHorizontal = true;
-        console.log("little");
-    //}
-    // else if (!isHorizontal && window.innerWidth >= widthTh) {
-    //     canvasWidth = 1024;//canvas.clientWidth;
-    //     canvasHeight = canvas.clientHeight;
-
-    //     analyserContext.canvas.width = canvasWidth;
-    //     analyserContext.canvas.height = canvasHeight;
-    //     isHorizontal = !isHorizontal
-    //     console.log("big");
-    // }
+    analyserContext.canvas.width = canvasWidth;
+    analyserContext.canvas.height = canvasHeight;
+    isHorizontal = true;
     changeButtonSize();
 
 }
@@ -282,11 +295,11 @@ function updateAnalysers() {
     rafID = window.requestAnimationFrame( updateAnalysers );
 }
 
-function updateWaves (stream) {
+function updateWaves () {
     inputPoint = audioContext.createGain();
 
     // Create an AudioNode from the stream.
-    realAudioInput = audioContext.createMediaStreamSource(stream);
+    realAudioInput = actualAudio.source;
     audioInput = realAudioInput;
     audioInput.connect(inputPoint);
 
@@ -294,94 +307,23 @@ function updateWaves (stream) {
     analyserNode.fftSize = 2048;
     inputPoint.connect( analyserNode );
 
-    zeroGain = audioContext.createGain();
-    zeroGain.gain.value = 0;
-    inputPoint.connect( zeroGain );
-    zeroGain.connect( audioContext.destination );
+    soundContext = audioContext.createGain();
+    soundContext.gain.value = 1;
+    inputPoint.connect( soundContext );
+    soundContext.connect( audioContext.destination );
     updateAnalysers();
 }
 
-// RECORD
+// PLAYERS
 
-function saveBlob(blob) {
-    toBuffer(blob, (err,buffer) => {
-        if(err) throw err;
-
-        fs.writeFile('audio/audio'+lastActive+'.wav',buffer, e => {
-            if (e) throw e;
-            console.log('wav saved')
-        });
-
-    });
-}
-
-function recordAudio(stream) {
-    var chunks = [];
-    var mediaRecorder = new MediaRecorder(stream);
-
-    play1.onclick = () => {
-        if (!isActive_2) {
-            if (!isActive_1) {
-                blockSpeaker2(true);
-                blockRestart(true);
-                play1.classList.add("active");
-                mediaRecorder.start();
-                console.log(mediaRecorder.state);
-                console.log("recorder1 started");
-            }
-            else {
-                blockSpeaker2(false);
-                blockRestart(false);
-                lastActive = 1;
-                play1.classList.remove("active");
-                mediaRecorder.stop();
-                console.log(mediaRecorder.state);
-                console.log("recorder1 stopped");
-            }
-        }
-    }
-
-    play2.onclick = () => {
-        if (!isActive_1) {
-            if (!isActive_2) {
-                blockSpeaker1(true);
-                blockRestart(true);
-                play2.classList.add("active");
-                mediaRecorder.start();
-                console.log(mediaRecorder.state);
-                console.log("recorder2 started");
-            }
-            else {
-                blockSpeaker1(false);
-                blockRestart(false);
-                lastActive = 2;
-                play2.classList.remove("active");
-                mediaRecorder.stop();
-                console.log(mediaRecorder.state);
-                console.log("recorder2 stopped");
-            }
-        }
-    }
-
-    mediaRecorder.onstop = function(e) {
-        var audio = document.createElement('audio');
-        var blob = new Blob(chunks, { 'type' : 'audio/wav' });
-        chunks = [];
-        var audioURL = URL.createObjectURL(blob);
-        audio.src = audioURL;
-        console.log("recorder stopped");
-
-        saveBlob(blob);
-    }
-
-    mediaRecorder.ondataavailable = function(e) {
-        chunks.push(e.data);
-    }
-}
-
-function gotStream(stream) {
-    updateWaves(stream);
-    recordAudio(stream);
+function createAudio(audio,id,source) {
+    audio = document.createElement("audio");
+    audio.id = id;
+    audio.loop = true;
+    audio.src = source;
+    audio.type = "audio/wav";
+    audio.volume = 1.0;
+    return audio;
 }
 
 function initAudio() {
@@ -389,28 +331,36 @@ function initAudio() {
     analyserContext = canvas.getContext('2d');
     isHorizontal = !(window.innerWidth >= widthTh);
     onResize();
+    updateWaves()
+}
 
-	if (!navigator.getUserMedia)
-		navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-	if (!navigator.cancelAnimationFrame)
-		navigator.cancelAnimationFrame = navigator.webkitCancelAnimationFrame || navigator.mozCancelAnimationFrame;
-	if (!navigator.requestAnimationFrame)
-		navigator.requestAnimationFrame = navigator.webkitRequestAnimationFrame || navigator.mozRequestAnimationFrame;
+// SELECTOR
 
-	navigator.getUserMedia({
-        "audio": {
-            "mandatory": {
-                "googEchoCancellation": "false",
-                "googAutoGainControl": "false",
-                "googNoiseSuppression": "false",
-                "googHighpassFilter": "false"
-            },
-            "optional": []
-        },
-    }, gotStream, function(e) {
-        alert('Error getting audio');
-        console.log(e);
-    });
+function restartSelectors() {
+    speaker1.value = 0;
+    speaker2.value = 0;
+    speaker1file.value = 0;
+    speaker2file.value = 0;
+}
+
+function blockSelector1(wantBlock) {
+    if (wantBlock) {
+        speaker1.classList.add("blocked");
+        speaker1file.classList.add("blocked");
+    } else {
+        speaker1.classList.remove("blocked");
+        speaker1file.classList.remove("blocked");
+    }
+}
+
+function blockSelector2(wantBlock) {
+    if (wantBlock) {
+        speaker2.classList.add("blocked");
+        speaker2file.classList.add("blocked");
+    } else {
+        speaker2.classList.remove("blocked");
+        speaker2file.classList.remove("blocked");
+    }
 }
 
 // INITIALIZATIONS
@@ -429,51 +379,48 @@ function modifyReadyToRun(allTrue) {
 }
 
 function initConfiguration() {
-    isActive_1 = false;
-    isActive_2 = false;
+    isActivePlay[0] = false;
+    isActivePlay[1] = false;
     isRunning = false;
-    lastActive = 0;
-    hoverRun = 0;
     modifyReadyToRun(false);
-    runColor = normalColor;
-    //guideAlpha = 0;
     runResult = "";
-    speaker1.value = 0;
-    speaker2.value = 0;
-
+    restartSelectors();
+    blockPlayer1(true);
+    blockPlayer2(true);
+    speaker1file.classList.add("blocked");
+    speaker2file.classList.add("blocked");
     blockRestart(false);
-    blockSpeaker1(false);
-    blockSpeaker2(false);
-    blockRun(true);
+    blockRun();
+    modifyReadyToRun();
+    restartAdvisers();
     restart.style.display = "none";
     underRun.style.justifyContent = "center";
     changeButtonSize();
-    changeAdviserColor();
+    changeColors();
+    actualAudio = audioNull;
 }
 
 function initConfigurationStart() {
-    isActive_1 = false;
-    isActive_2 = false;
+    isActivePlay[0] = false;
+    isActivePlay[1] = false;
     isRunning = false;
-    lastActive = 0;
-    hoverRun = 0;
     modifyReadyToRun(false);
-    runColor = normalColor;
-    //guideAlpha = 0;
     runResult = "";
-    speaker1.value = 0;
-    speaker2.value = 0;
-
+    restartSelectors();
+    blockPlayer1(true);
+    blockPlayer2(true);
     blockRestart(false);
-    blockSpeaker1(false);
-    blockSpeaker2(false);
-    blockRunStart(true);
+    blockRun();
+    modifyReadyToRun();
+    restartAdvisers();
+    speaker1file.classList.add("blocked");
+    speaker2file.classList.add("blocked");
     guideAnimIn = setInterval(fadeInTextAnimation(),10);
     guideTitle.style.opacity = "1";
     restart.style.display = "none";
     underRun.style.justifyContent = "center";
     changeButtonSize();
-    changeAdviserColor();
+    changeColors();
 }
 
 function onSelectChange(select) {
@@ -481,21 +428,69 @@ function onSelectChange(select) {
 }
 
 function initEvents() {
+    play1.onclick = () => {
+        if (!isActivePlay[1] && !isBlockedPlay[0]) {
+            if (!isActivePlay[0]) {
+                isActivePlay[0] = true;
+                blockPlayer2();
+                blockRestart(true);
+                blockSelector1(true);
+                play1.classList.add("active");
+                blockRun();
+                actualAudio = audioPlayer1;
+                initAudio();
+                actualAudio.obj.play();
+            }
+            else {
+                isActivePlay[0] = false;
+                blockPlayer2();
+                blockRestart(false);
+                blockSelector1(false);
+                play1.classList.remove("active");
+                blockRun();
+                actualAudio.obj.pause();
+            }
+        }
+    }
+
+    play2.onclick = () => {
+        if (!isActivePlay[0] && !isBlockedPlay[1]) {
+            if (!isActivePlay[1]) {
+                isActivePlay[1] = true;
+                blockPlayer1();
+                blockRestart(true);
+                blockSelector2(true);
+                play2.classList.add("active");
+                blockRun();
+                actualAudio = audioPlayer2;
+                initAudio();
+                actualAudio.obj.play();
+            }
+            else {
+                isActivePlay[1] = false;
+                blockPlayer1();
+                blockRestart(false);
+                blockSelector2(false);
+                play2.classList.remove("active");
+                blockRun();
+                actualAudio.obj.pause();
+            }
+        }
+    }
+
     run.onclick = () => {
-        if (isReadyToRun() && !isRunning && !isActive_1 && !isActive_2) {
+        if (isReadyToRun() && !isRunning && !isActivePlay[0] && !isActivePlay[1]) {
             isRunning = true;
             blockRestart(true);
-            blockSpeaker1(true);
-            blockSpeaker2(true);
-            //title1.style.color = blockColor;
-            //title2.style.color = blockColor;
+            blockPlayer1(true);
+            blockPlayer2(true);
+            blockSelector1(true);
+            blockSelector2(true);
             run.classList.add("animated");
             exec('./bin/checkspeakers', (err, stdout, stderr) => {
                 if (err) {
                     return;
                 }
-
-                // the *entire* stdout and stderr (buffered)
                 console.log(`stdout: ${stdout}`);
                 console.log(`stderr: ${stderr}`);
                 if (stdout == 0) {
@@ -506,8 +501,10 @@ function initEvents() {
                 }
                 isRunning = false;
                 blockRestart(false);
-                blockSpeaker1(false);
-                blockSpeaker2(false);
+                blockPlayer1(false);
+                blockPlayer2(false);
+                blockSelector1(false);
+                blockSelector2(false);
                 run.classList.remove("animated");
                 afterResultChanges();
             });
@@ -524,8 +521,12 @@ function initEvents() {
     speaker1.onchange = () => {
         if (speaker1.value != 0) {
             readyToRun[0] = true;
-            if (speaker1file.value != 0)
-                highlightAdviser(0);
+            readyToRun[1] = false;
+            speaker1file.value = 0;
+            speaker1file.classList.remove("blocked");
+            restartAdviser(0);
+            blockPlayer1(true);
+            runResult = "";
         }
         else {
             readyToRun[0] = false;
@@ -535,8 +536,14 @@ function initEvents() {
     speaker1file.onchange = () => {
         if (speaker1file.value != 0) {
             readyToRun[1] = true;
-            if (speaker1.value != 0)
+            if (speaker1.value != 0) {
                 highlightAdviser(0);
+                blockPlayer1(false);
+                console.log("speaker1:" + speaker1.value + " file:" + speaker1file.value);
+                audioPlayer1.obj = createAudio(audioPlayer1.obj,"audio1","./audio/audio1.wav");
+                audioPlayer1.obj = speaker1.appendChild(audioPlayer1.obj);
+                audioPlayer1.source = audioContext.createMediaElementSource(audioPlayer1.obj);
+            }
         }
         else {
             readyToRun[1] = false;
@@ -546,8 +553,12 @@ function initEvents() {
     speaker2.onchange = () => {
         if (speaker2.value != 0) {
             readyToRun[2] = true;
-            if (speaker2file.value != 0)
-                highlightAdviser(1);
+            readyToRun[3] = false;
+            speaker2file.value = 0;
+            speaker2file.classList.remove("blocked");
+            restartAdviser(1);
+            blockPlayer2(true);
+            runResult = "";
         }
         else {
             readyToRun[2] = false;
@@ -555,26 +566,32 @@ function initEvents() {
         blockRun();
     };
     speaker2file.onchange = () => {
-        if (speaker1file.value != 0) {
+        if (speaker2file.value != 0) {
             readyToRun[3] = true;
-            if (speaker2.value != 0)
+            if (speaker2.value != 0) {
                 highlightAdviser(1);
+                blockPlayer2(false);
+                console.log("speaker2:" + speaker2.value + " file:" + speaker2file.value);
+                audioPlayer2.obj = createAudio(audioPlayer2.obj,"audio2","./audio/audio2.wav");
+                audioPlayer2.obj = speaker2.appendChild(audioPlayer2.obj);
+                audioPlayer2.source = audioContext.createMediaElementSource(audioPlayer2.obj);
+            }
         }
         else {
             readyToRun[3] = false;
         }
         blockRun();
     };
-
-    // play1.onmouseover = () => {hoverRun = 1;changePlayButtonSize(null)};
-    // play1.onmouseout = () => {hoverRun = 0;changePlayButtonSize(null)};
-    // play2.onmouseover = () => {hoverRun = 1;changePlayButtonSize(null)};
-    // play2.onmouseout = () => {hoverRun = 0;changePlayButtonSize(null)};
 }
 
 function init() {
+    createSpeakerList();
     initConfigurationStart();
     initEvents();
+    audioNull.obj = createAudio(audioNull.obj,"audioNull","./audio/null.wav");
+    audioNull.obj = run.appendChild(audioNull.obj);
+    audioNull.source = audioContext.createMediaElementSource(audioNull.obj);
+    actualAudio = audioNull;
     initAudio();
 }
 
