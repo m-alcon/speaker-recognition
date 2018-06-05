@@ -72,6 +72,8 @@ int main(int argc, char** argv) {
     vector<vector<vector<float>>> train_data = loadData("train");
     vector<vector<vector<float>>> test_data = loadData("test");
     std::unique_ptr<Timer> iteration(new Timer("completed in"));
+
+    ComputationGraph cg;
     for (unsigned epoch = 0; epoch < total_epoch; ++epoch) {
 
         // Start timer
@@ -82,7 +84,7 @@ int main(int argc, char** argv) {
         for (unsigned i = 0; i < epoch_size; ++i) {
             // build graph for this instance
             double loss = 0;
-            ComputationGraph cg;
+
             // Get input batch
             cur_batch1 = vector<Expression>(batch_size);
             cur_batch2 = vector<Expression>(batch_size);

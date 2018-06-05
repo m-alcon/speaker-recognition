@@ -515,6 +515,11 @@ function initEvents() {
             blockSelector1(true);
             blockSelector2(true);
             run.classList.add("animated");
+            let command = "./bin/compare_speakers -d "+
+                speakerData[speaker1.value-1][speaker1file.value] + " -ts " +
+                speakerData[speaker2.value-1][speaker2file.value] + " -m " +
+                "modelFile";
+            console.log(command)
             exec('./bin/checkspeakers', (err, stdout, stderr) => {
                 if (err) {
                     return;
