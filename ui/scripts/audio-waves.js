@@ -79,11 +79,40 @@ function createSpeakerList() {
         if (err) throw err;
         data = data.split("\n");
         for (let i = 0; i < data.length; ++i) {
+            let speakerOption1 = document.createElement("option");
+            speakerOption1.text = "Voice " + i;
+            speakerOption1.value = i+1;
+            let speakerOption2 = speakerOption1.cloneNode(true)
+            speaker1.appendChild(speakerOption1);
+            speaker2.appendChild(speakerOption2);
             data[i] = data[i].split(" ");
         }
-        console.log(data[3]);
         speakerData = data;
     });
+}
+
+function createFile1List() {
+    let saveDefault = speaker1file.options[0];
+    speaker1file.options.length = 0;
+    speaker1file.appendChild(saveDefault);
+    for (let i = 1; i < speakerData[speaker1.value].length; ++i) {
+        let fileOption = document.createElement("option");
+        fileOption.text = i-1;
+        fileOption.value = i;
+        speaker1file.appendChild(fileOption);
+    }
+}
+
+function createFile2List() {
+    let saveDefault = speaker2file.options[0];
+    speaker2file.options.length = 0;
+    speaker2file.appendChild(saveDefault);
+    for (let i = 1; i < speakerData[speaker2.value].length; ++i) {
+        let fileOption = document.createElement("option");
+        fileOption.text = i-1;
+        fileOption.value = i;
+        speaker2file.appendChild(fileOption);
+    }
 }
 
 // VISUAL
@@ -174,7 +203,6 @@ function afterResultChanges() {
     underRun.style.justifyContent = "space-between";
     changeGuideTitle();
     guideAnimOut = setInterval(fadeOutTextAnimation(),10);
-    console.log("pid out: " + guideAnimOut);
 }
 
 function changeColors() {
@@ -522,6 +550,7 @@ function initEvents() {
         if (speaker1.value != 0) {
             readyToRun[0] = true;
             readyToRun[1] = false;
+            createFile1List();
             speaker1file.value = 0;
             speaker1file.classList.remove("blocked");
             restartAdviser(0);
@@ -539,7 +568,7 @@ function initEvents() {
             if (speaker1.value != 0) {
                 highlightAdviser(0);
                 blockPlayer1(false);
-                console.log("speaker1:" + speaker1.value + " file:" + speaker1file.value);
+                console.log("data["+(speaker1.value-1)+"]["+speaker1file.value+"]:" + speakerData[speaker1.value-1][speaker1file.value]);
                 audioPlayer1.obj = createAudio(audioPlayer1.obj,"audio1","./audio/audio1.wav");
                 audioPlayer1.obj = speaker1.appendChild(audioPlayer1.obj);
                 audioPlayer1.source = audioContext.createMediaElementSource(audioPlayer1.obj);
@@ -554,6 +583,7 @@ function initEvents() {
         if (speaker2.value != 0) {
             readyToRun[2] = true;
             readyToRun[3] = false;
+            createFile2List();
             speaker2file.value = 0;
             speaker2file.classList.remove("blocked");
             restartAdviser(1);
@@ -571,7 +601,7 @@ function initEvents() {
             if (speaker2.value != 0) {
                 highlightAdviser(1);
                 blockPlayer2(false);
-                console.log("speaker2:" + speaker2.value + " file:" + speaker2file.value);
+                console.log("data["+(speaker2.value-1)+"]["+speaker2file.value+"]:" + speakerData[speaker2.value-1][speaker2file.value]);
                 audioPlayer2.obj = createAudio(audioPlayer2.obj,"audio2","./audio/audio2.wav");
                 audioPlayer2.obj = speaker2.appendChild(audioPlayer2.obj);
                 audioPlayer2.source = audioContext.createMediaElementSource(audioPlayer2.obj);

@@ -162,11 +162,6 @@ canvas#audioWave {
     border-color: rgb(70, 70, 70);
 }
 
-.speaker .blocked > .inside-pushable{
-    border-width: 3.5vmin 0 3.5vmin 6vmin;
-    border-color: transparent transparent transparent rgb(70, 70, 70);
-}
-
 .pushable:hover {
     cursor: pointer;
 }
@@ -174,6 +169,11 @@ canvas#audioWave {
 .pushable:hover .inside-pushable{
     height: 7vmin;
     border-width: 4vmin 0 4vmin 7vmin;
+}
+
+.speaker .blocked > .inside-pushable{
+    border-width: 3.5vmin 0 3.5vmin 6vmin;
+    border-color: transparent transparent transparent rgb(70, 70, 70);
 }
 
 /* Run */
@@ -198,7 +198,7 @@ canvas#audioWave {
 }
 
 #run.blocked {
-    font-size: 9vmin;
+    font-size: 9vmin !important;
     border-radius: 0;
     color: rgb(70, 70, 70);
     border-color: rgb(70, 70, 70);;
@@ -289,9 +289,10 @@ select {
     background-color: transparent;
     border-width: 0.5vmin;
     border-color: white;
-    font-family: "Moon Lower";
+    font-family: "Libel";
+    letter-spacing: 0.5vmin;
     color: white;
-    font-size: 3vmin;
+    font-size: 3.5vmin;
     text-align: center;
     -webkit-transition: border-color 0.5s, color 0.5s;
     transition: border-color 0.5s, color 0.5s;
@@ -304,10 +305,10 @@ select:hover {
 }
 
 select.select-speaker {
-    width: 60%;
+    width: 55%;
 }
 select.select-file {
-    width: 25%;
+    width: 30%;
 }
 
 select.blocked {

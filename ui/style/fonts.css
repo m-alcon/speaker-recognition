@@ -23,3 +23,24 @@
     src: url("../fonts/Moon/Legacy MOON Files/Moon Bold.otf");
     font-weight: bold;
 }
+
+@font-face {
+    font-family: "Higher";
+    src: url("../fonts/Higher/Higher.otf");
+    src: url("../fonts/Higher/Higher.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Simplifica";
+    src: url("../fonts/Simplifica/SIMPLIFICA Typeface.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Skyer";
+    src: url("../fonts/Skyer/Skyer-Regular.otf");
+}
+
+@font-face {
+    font-family: "Libel";
+    src: url("../fonts/Libel/libel-suit-rg.ttf") format("truetype");
+}
