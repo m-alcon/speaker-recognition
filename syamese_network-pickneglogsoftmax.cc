@@ -3,7 +3,7 @@
  *
  * This provide an example of usage of the mlp.h model
  */
-#include "mlp.h"
+#include "mlp-pickneglogsoftmax.h"
 #include "dynet/io.h"
 #include "dynet/../examples/cpp-utils/getpid.h"
 #include "dynet/../examples/cpp-utils/cl-args.h"
