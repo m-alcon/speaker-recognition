@@ -54,7 +54,8 @@ let MESSAGES = {
     init: "SPEAKERS, CHOICE YOUR VOICES",
     leftSpeaker: "LEFT SPEAKER, CHOICE YOUR VOICE",
     rightSpeaker: "RIGHT SPEAKER, CHOICE YOUR VOICE",
-    run: "YOU ARE READY TO RUN IT",
+    ready: "YOU ARE READY TO RUN IT",
+    run: "RUNNING",
     different: "DIFFERENT SPEAKERS",
     equal: "SAME SPEAKERS"
 }
@@ -80,7 +81,7 @@ function createSpeakerList() {
         data = data.split("\n");
         for (let i = 0; i < data.length; ++i) {
             let speakerOption1 = document.createElement("option");
-            speakerOption1.text = "Voice " + i;
+            speakerOption1.text = "Speaker " + i;
             speakerOption1.value = i+1;
             let speakerOption2 = speakerOption1.cloneNode(true)
             speaker1.appendChild(speakerOption1);
@@ -179,9 +180,12 @@ function fadeOutTextAnimation() {
 }
 
 function changeGuideTitle() {
-    if (isReadyToRun()) {
+    if (isRunning) {
+        wantedMessage = MESSAGES.run;
+    }
+    else if (isReadyToRun()) {
         if (runResult == "") {
-            wantedMessage = MESSAGES.run;
+            wantedMessage = MESSAGES.ready;
         }
         else {
             wantedMessage = runResult;
@@ -514,6 +518,9 @@ function initEvents() {
             blockPlayer2(true);
             blockSelector1(true);
             blockSelector2(true);
+            changeGuideTitle();
+            if (guideTitle.textContent != wantedMessage)
+                guideAnimOut = setInterval(fadeOutTextAnimation(),10);
             run.classList.add("animated");
             let command = "./bin/compare_speakers -d "+
                 speakerData[speaker1.value-1][speaker1file.value] + " -ts " +
