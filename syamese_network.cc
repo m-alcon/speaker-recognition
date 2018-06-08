@@ -154,7 +154,7 @@ int main(int argc, char** argv) {
             vector<float> probs = nn.predict_batch(x1_batch,x2_batch,cg);
 
             for (int j = 0; j < batch_size; ++j) {
-                if ((probs[j] >= 0.5) == cur_labels[j])
+                if (int(probs[j] >= 0.5) == cur_labels[j])
                     ++hit_count;
             }
 
@@ -190,20 +190,20 @@ int main(int argc, char** argv) {
             best_accuracy = hit_count;
             TextFileSaver saver(fname);
             count_from_best_accuracy = 0;
-            cerr << "[SAVE epoch=" << epoch << " Accuracy: " << best_accuracy/ (double) validation_size << "]" << endl;
+            cerr << "[SAVE epoch=" << epoch << " Accuracy: " << best_accuracy/ (double) (validation_size*batch_size) << "]" << endl;
             saver.save(model);
         }
         else {
             ++count_from_best_accuracy;
             cerr << "[COUNT epoch=" << epoch << " count=" << count_from_best_accuracy << "]" << endl;
             if (count_from_best_accuracy >= 10) {
-                cerr << "[BEST" << " Accuracy: " << best_accuracy/ (double) validation_size << "]" << endl;
+                cerr << "[BEST" << " Accuracy: " << best_accuracy/ (double) (validation_size*batch_size) << "]" << endl;
                 return 0;
             }
         }
         // Print informations
         cerr << "[DEV epoch=" << (epoch)
-            << "] Accuracy = " << (hit_count / (double) validation_size)<< ' ';
+            << "] Accuracy = " << (hit_count / (double) (validation_size*batch_size))<< ' ';
         // Reinitialize timer
         iteration.reset(new Timer("completed in"));
         cerr << endl;
