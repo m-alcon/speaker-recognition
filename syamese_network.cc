@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
     unsigned total_epoch = 1000;
     unsigned batch_size = 40;
     unsigned epoch_size = 2500;
-    unsigned validation_size = 500*batch_size;
+    unsigned validation_size = 500;
     // ParameterCollection name (for saving) -----------------------------------------------------------------------
 
     ostringstream os;
@@ -93,15 +93,11 @@ int main(int argc, char** argv) {
                 //cerr << "POSITIVE2 " << (*ex.positive2).size() << endl;
                 //cerr << "NEGATIVE1 " << (*ex.negative1).size() << endl;
                 //cerr << "NEGATIVE2 " << (*ex.negative2).size() << endl;
-                Expression ep1 = input(cg, {16896}, *ex.positive1);
-                cur_batch1[j] = ep1;
-                Expression ep2 = input(cg, {16896}, *ex.positive2);
-                cur_batch2[j] = ep2;
+                cur_batch1[j] = input(cg, {16896}, *ex.positive1);
+                cur_batch2[j] = input(cg, {16896}, *ex.positive2);
                 cur_labels[j] = 1.0f;
-                Expression en1 = input(cg, {16896}, *ex.negative1);
-                cur_batch1[j+1] = en1;
-                Expression en2 = input(cg, {16896}, *ex.negative2);
-                cur_batch2[j+1] = en2;
+                cur_batch1[j+1] = input(cg, {16896}, *ex.negative1);
+                cur_batch2[j+1] = input(cg, {16896}, *ex.negative2);
                 cur_labels[j+1] = 0.0f;
             }
             // Reshape as batch (not very intuitive yet)
@@ -133,42 +129,65 @@ int main(int argc, char** argv) {
         nn.disable_dropout();
 
         // Show score on dev data
-        double dpos = 0;
-        unsigned sum_prediction = 0;
-        for (unsigned i = 0; i < validation_size; i+=2) {
+        double hit_count = 0;
+        for (unsigned i = 0; i < validation_size; ++i) {
             // build graph for this instance
             ComputationGraph cg;
             // Get input expression
-            Example ex = generateExample(test_data);
 
-            Expression x1 = input(cg, {16896}, *ex.positive1);
-            Expression x2 = input(cg, {16896}, *ex.positive2);
-            unsigned predicted_idx = nn.predict(x1, x2, cg);
-            // Increment count of positive classification
-            sum_prediction += predicted_idx;
-            if (predicted_idx == 1) {
-                dpos++;
+            cur_batch1 = vector<Expression>(batch_size);
+            cur_batch2 = vector<Expression>(batch_size);
+            cur_labels = vector<float>(batch_size);
+            for (int j = 0; j < batch_size; j+=2) {
+                Example ex = generateExample(train_data);
+                cur_batch1[j] = input(cg, {16896}, *ex.positive1);
+                cur_batch2[j] = input(cg, {16896}, *ex.positive2);
+                cur_labels[j] = 1.0f;
+                cur_batch1[j+1] = input(cg, {16896}, *ex.negative1);
+                cur_batch2[j+1] = input(cg, {16896}, *ex.negative2);
+                cur_labels[j+1] = 0.0f;
             }
+            // Reshape as batch (not very intuitive yet)
+            Expression x1_batch = reshape(concatenate_cols(cur_batch1), Dim({16896}, batch_size));
+            Expression x2_batch = reshape(concatenate_cols(cur_batch2), Dim({16896}, batch_size));
+
+            vector<float> probs = nn.predict_batch(x1_batch,x2_batch,cg);
+
+            for (int j = 0; j < batch_size; ++j) {
+                if ((probs[j] >= 0.5) == cur_labels[j])
+                    ++hit_count;
+            }
+
+            // Example ex = generateExample(test_data);
+
+            // Expression x1 = input(cg, {16896}, *ex.positive1);
+            // Expression x2 = input(cg, {16896}, *ex.positive2);
+            // unsigned predicted_idx = nn.predict(x1, x2, cg);
+            // // Increment count of positive classification
+            // sum_prediction += predicted_idx;
+            // if (predicted_idx == 1) {
+            //     hit_count++;
+            // }
+            // //if (train_size % 69 == 0) {
+            //     cerr << "\r[DEV epoch="<< epoch << "] Process: " << i*100/validation_size << "%";
+            // //}
+
+            // Expression x3 = input(cg, {16896}, *ex.negative1);
+            // Expression x4 = input(cg, {16896}, *ex.negative2);
+            // predicted_idx = nn.predict(x3, x4, cg);
+            // // Increment count of positive classification
+            // sum_prediction += predicted_idx;
+            // if (predicted_idx == 0) {
+            //     hit_count++;
+            // }
             //if (train_size % 69 == 0) {
                 cerr << "\r[DEV epoch="<< epoch << "] Process: " << i*100/validation_size << "%";
-            //}
-
-            Expression x3 = input(cg, {16896}, *ex.negative1);
-            Expression x4 = input(cg, {16896}, *ex.negative2);
-            predicted_idx = nn.predict(x3, x4, cg);
-            // Increment count of positive classification
-            sum_prediction += predicted_idx;
-            if (predicted_idx == 0) {
-                dpos++;
-            }
-            //if (train_size % 69 == 0) {
-                cerr << "\r[DEV epoch="<< epoch << "] Process: " << (i+1)*100/validation_size << "%";
             //}
         }
         cerr << endl;
         // If the dev loss is lower than the previous ones, save the model
-        if (dpos > best_accuracy) {
-            best_accuracy = dpos;
+        if (hit_count > best_accuracy) {
+            best_accuracy = hit_count;
             TextFileSaver saver(fname);
             count_from_best_accuracy = 0;
             cerr << "[SAVE epoch=" << epoch << " Accuracy: " << best_accuracy/ (double) validation_size << "]" << endl;
@@ -184,7 +203,7 @@ int main(int argc, char** argv) {
         }
         // Print informations
         cerr << "[DEV epoch=" << (epoch)
-            << "] Accuracy = " << (dpos / (double) validation_size) << " | " << sum_prediction << ' ';
+            << "] Accuracy = " << (hit_count / (double) validation_size)<< ' ';
         // Reinitialize timer
         iteration.reset(new Timer("completed in"));
         cerr << endl;
