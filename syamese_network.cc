@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
             cur_batch2 = vector<Expression>(batch_size);
             cur_labels = vector<float>(batch_size);
             for (int j = 0; j < batch_size; j+=2) {
-                Example ex = generateExample(train_data);
+                Example ex = generateExample(test_data);
                 cur_batch1[j] = input(cg, {16896}, *ex.positive1);
                 cur_batch2[j] = input(cg, {16896}, *ex.positive2);
                 cur_labels[j] = 1.0f;
