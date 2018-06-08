@@ -25,6 +25,7 @@ vector<float> readSpeakerFile (string speaker) {
 }
 
 vector<vector<vector<float>>> loadData (const string &name) {
+    srand (time(NULL));
     unsigned size = 1097;
     if(name == "test") size = 275;
 
@@ -51,7 +52,6 @@ vector<vector<vector<float>>> loadData (const string &name) {
 Example generateExample(vector<vector<vector<float>>> &data) {
     //cerr << "====== GENERATE EXAMPLE ======" << endl;
     Example res;
-    srand (time(NULL));
     int speaker1 = rand() % (data.size());
     //cerr << "[" << data[speaker1].size() << "] speaker1=" << speaker1 << endl;
     int speaker2 = rand() % (data.size());

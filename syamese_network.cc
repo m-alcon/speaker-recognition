@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
 
     ParameterCollection model;
     // Use Adam optimizer
-    float learning_rate = 0.001f;
+    float learning_rate = 0.00001f;
     MomentumSGDTrainer trainer(model, learning_rate, 0.9);
     trainer.clip_threshold *= batch_size;
 
@@ -79,9 +79,9 @@ int main(int argc, char** argv) {
         // Activate dropout
         // Run for the given number of epochs (or indefinitely if params.NUM_EPOCHS is negative)
         //while (static_cast<int>(epoch) < params.NUM_EPOCHS || params.NUM_EPOCHS < 0) {
+        float loss = 0;
         for (unsigned i = 0; i < epoch_size; ++i) {
             // build graph for this instance
-            double loss = 0;
             ComputationGraph cg;
             // Get input batch
             cur_batch1 = vector<Expression>(batch_size);
@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
             Expression labels_batch = reshape(input(cg, {batch_size}, cur_labels), Dim({1}, batch_size));
             Expression loss_expr = nn.get_nll(x1_batch, x2_batch, labels_batch, cg);
             // Get scalar error for monitoring
-            loss = as_scalar(cg.forward(loss_expr));
+            loss += as_scalar(cg.forward(loss_expr));
             // Increment number of samples processed
             // Compute gradient with backward pass
             cg.backward(loss_expr);
@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
             //if (i % 3 == 0 || i == verification_stop) {
                 // Print informations
                 //trainer.status();
-                cerr << "\r[TRAIN epoch="<< epoch <<"] Process: " << i*100/epoch_size << "% | " << " Loss = " << (loss / batch_size);
+                cerr << "\r[TRAIN epoch="<< epoch <<"] Process: " << i*100/epoch_size << "% | " << " Loss = " << (loss / (i*batch_size));
                 // Reinitialize timer
                 //iteration.reset(new Timer("completed in"));
                 // Reinitialize loss
