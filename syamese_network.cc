@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
     cerr << "Parameters will be written to: " << fname << endl;
     // Build model -----------------------------------------------------------------------------------
 
-    ParameterCollection model;
+    ParameterCollection model, best_model;
     // Use Adam optimizer
     float learning_rate = 0.00001f;
     MomentumSGDTrainer trainer(model, learning_rate, 0.9);
@@ -45,12 +45,12 @@ int main(int argc, char** argv) {
 
     // Create model
     MLP nn(model, vector<Layer>({
-        Layer(/* input_dim */ 16896, /* output_dim */ 5000, /* activation */ RELU, /* dropout_rate */ 0.0),
-        Layer(/* input_dim */ 5000, /* output_dim */ 5000, /* activation */ RELU, /* dropout_rate */ 0.0),
-        Layer(/* input_dim */ 5000, /* output_dim */ 1000, /* activation */ RELU, /* dropout_rate */ 0.0),
-        Layer(/* input_dim */ 1000, /* output_dim */ 5000, /* activation */ RELU, /* dropout_rate */ 0.0)
+        Layer(/* input_dim */ 16896, /* output_dim */ 5000, /* activation */ RELU, /* dropout_rate */ 0.1),
+        Layer(/* input_dim */ 5000, /* output_dim */ 5000, /* activation */ RELU, /* dropout_rate */ 0.1),
+        Layer(/* input_dim */ 5000, /* output_dim */ 1000, /* activation */ RELU, /* dropout_rate */ 0.1),
+        Layer(/* input_dim */ 1000, /* output_dim */ 5000, /* activation */ RELU, /* dropout_rate */ 0.1)
     }),vector<Layer>({
-         Layer(/* input_dim */ 10000, /* output_dim */ 1000, /* activation */ RELU, /* dropout_rate */ 0.0),
+         Layer(/* input_dim */ 10000, /* output_dim */ 1000, /* activation */ RELU, /* dropout_rate */ 0.1),
          Layer(/* input_dim */ 1000, /* output_dim */ 1, /* activation */ SIGMOID, /* dropout_rate */ 0.0),
     }));
 
@@ -89,10 +89,6 @@ int main(int argc, char** argv) {
             cur_labels = vector<float>(batch_size);
             for (int j = 0; j < batch_size; j+=2) {
                 Example ex = generateExample(train_data);
-                //cerr << "POSITIVE1 " << (*ex.positive1).size() << endl;
-                //cerr << "POSITIVE2 " << (*ex.positive2).size() << endl;
-                //cerr << "NEGATIVE1 " << (*ex.negative1).size() << endl;
-                //cerr << "NEGATIVE2 " << (*ex.negative2).size() << endl;
                 cur_batch1[j] = input(cg, {16896}, *ex.positive1);
                 cur_batch2[j] = input(cg, {16896}, *ex.positive2);
                 cur_labels[j] = 1.0f;
@@ -158,46 +154,23 @@ int main(int argc, char** argv) {
                     ++hit_count;
             }
 
-            // Example ex = generateExample(test_data);
-
-            // Expression x1 = input(cg, {16896}, *ex.positive1);
-            // Expression x2 = input(cg, {16896}, *ex.positive2);
-            // unsigned predicted_idx = nn.predict(x1, x2, cg);
-            // // Increment count of positive classification
-            // sum_prediction += predicted_idx;
-            // if (predicted_idx == 1) {
-            //     hit_count++;
-            // }
-            // //if (train_size % 69 == 0) {
-            //     cerr << "\r[DEV epoch="<< epoch << "] Process: " << i*100/validation_size << "%";
-            // //}
-
-            // Expression x3 = input(cg, {16896}, *ex.negative1);
-            // Expression x4 = input(cg, {16896}, *ex.negative2);
-            // predicted_idx = nn.predict(x3, x4, cg);
-            // // Increment count of positive classification
-            // sum_prediction += predicted_idx;
-            // if (predicted_idx == 0) {
-            //     hit_count++;
-            // }
-            //if (train_size % 69 == 0) {
-                cerr << "\r[DEV epoch="<< epoch << "] Process: " << i*100/validation_size << "%";
-            //}
+            cerr << "\r[DEV epoch="<< epoch << "] Process: " << i*100/validation_size << "%";
         }
         cerr << endl;
         // If the dev loss is lower than the previous ones, save the model
         if (hit_count > best_accuracy) {
             best_accuracy = hit_count;
-            TextFileSaver saver(fname);
+            best_model = model;
             count_from_best_accuracy = 0;
-            cerr << "[SAVE epoch=" << epoch << " Accuracy: " << best_accuracy/ (double) (validation_size*batch_size) << "]" << endl;
-            saver.save(model);
+            cerr << "[BEST epoch=" << epoch << " Accuracy: " << best_accuracy/ (double) (validation_size*batch_size) << "]" << endl;
         }
         else {
             ++count_from_best_accuracy;
             cerr << "[COUNT epoch=" << epoch << " count=" << count_from_best_accuracy << "]" << endl;
             if (count_from_best_accuracy >= 10) {
-                cerr << "[BEST" << " Accuracy: " << best_accuracy/ (double) (validation_size*batch_size) << "]" << endl;
+                TextFileSaver saver(fname);
+                saver.save(best_model);
+                cerr << "[SAVE Accuracy: " << best_accuracy/ (double) (validation_size*batch_size) << "]" << endl;
                 return 0;
             }
         }
