@@ -39,10 +39,12 @@ int main(int argc, char** argv) {
     }
 
     ComputationGraph cg;
-    // Get input expression
+    string s1, s2;
 
-    Expression x1 = input(cg, {16896}, readSpeakerFile(params.dev_file));
-    Expression x2 = input(cg, {16896}, readSpeakerFile(params.test_file));
+    while (cin >> s1 >> s2) {
+        Expression x1 = input(cg, {16896}, readSpeakerFile(s1));
+        Expression x2 = input(cg, {16896}, readSpeakerFile(s2));
 
-    cout << nn.predict(x1, x2, cg) << endl;
+        cout << nn.predict(x1, x2, cg) << endl;
+    }
 }

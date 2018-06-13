@@ -1,6 +1,6 @@
 const fs = require("fs");
-const toBuffer = require("blob-to-buffer")
-const {exec} = require("child_process");
+const toBuffer = require("blob-to-buffer");
+const {spawn} = require("child_process");
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
@@ -73,10 +73,13 @@ let KEYFRAMES = {
 
 let runResult = "";
 
+let program = spawn("./bin/checkspeakers");
+
 // SPEAKER LIST
 
 function createSpeakerList() {
-    fs.readFile("./scripts/app-speakers.dat", "utf-8" , (err, data) => {
+    fs.readFile("../scripts/speaker-audio-list.dat", "utf-8" , (err, data) => {
+    //fs.readFile("./scripts/app-speakers.dat", "utf-8" , (err, data) => {
         if (err) throw err;
         data = data.split("\n");
         for (let i = 0; i < data.length; ++i) {
@@ -96,10 +99,10 @@ function createFile1List() {
     let saveDefault = speaker1file.options[0];
     speaker1file.options.length = 0;
     speaker1file.appendChild(saveDefault);
-    for (let i = 1; i < speakerData[speaker1.value].length; ++i) {
+    for (let i = 0; i < speakerData[speaker1.value].length; ++i) {
         let fileOption = document.createElement("option");
-        fileOption.text = i-1;
-        fileOption.value = i;
+        fileOption.text = i;
+        fileOption.value = i+1;
         speaker1file.appendChild(fileOption);
     }
 }
@@ -108,10 +111,10 @@ function createFile2List() {
     let saveDefault = speaker2file.options[0];
     speaker2file.options.length = 0;
     speaker2file.appendChild(saveDefault);
-    for (let i = 1; i < speakerData[speaker2.value].length; ++i) {
+    for (let i = 0; i < speakerData[speaker2.value].length; ++i) {
         let fileOption = document.createElement("option");
-        fileOption.text = i-1;
-        fileOption.value = i;
+        fileOption.text = i;
+        fileOption.value = i+1;
         speaker2file.appendChild(fileOption);
     }
 }
@@ -522,32 +525,10 @@ function initEvents() {
             if (guideTitle.textContent != wantedMessage)
                 guideAnimOut = setInterval(fadeOutTextAnimation(),10);
             run.classList.add("animated");
-            let command = "./bin/compare_speakers -d "+
-                speakerData[speaker1.value-1][speaker1file.value] + " -ts " +
-                speakerData[speaker2.value-1][speaker2file.value] + " -m " +
-                "modelFile";
-            console.log(command)
-            exec('./bin/checkspeakers', (err, stdout, stderr) => {
-                if (err) {
-                    return;
-                }
-                console.log(`stdout: ${stdout}`);
-                console.log(`stderr: ${stderr}`);
-                if (stdout == 0) {
-                    runResult = MESSAGES.different;
-                }
-                else {
-                    runResult = MESSAGES.equal;
-                }
-                isRunning = false;
-                blockRestart(false);
-                blockPlayer1(false);
-                blockPlayer2(false);
-                blockSelector1(false);
-                blockSelector2(false);
-                run.classList.remove("animated");
-                afterResultChanges();
-            });
+            let speakersString = speakerData[speaker1.value-1][speaker1file.value-1] + "\n" +
+                speakerData[speaker2.value-1][speaker2file.value-1] + "\n"
+            console.log(speakersString)
+            program.stdin.write(speakersString);
         }
     }
 
@@ -580,8 +561,9 @@ function initEvents() {
             if (speaker1.value != 0) {
                 highlightAdviser(0);
                 blockPlayer1(false);
-                console.log("data["+(speaker1.value-1)+"]["+speaker1file.value+"]:" + speakerData[speaker1.value-1][speaker1file.value]);
-                audioPlayer1.obj = createAudio(audioPlayer1.obj,"audio1","./audio/audio1.wav");
+                let spk_file = speakerData[speaker1.value-1][speaker1file.value-1];
+                spk_file = spk_file.substring(0, spk_file.length-2) + ".wav";
+                audioPlayer1.obj = createAudio(audioPlayer1.obj,"audio1","./audio/" + spk_file);
                 audioPlayer1.obj = speaker1.appendChild(audioPlayer1.obj);
                 audioPlayer1.source = audioContext.createMediaElementSource(audioPlayer1.obj);
             }
@@ -613,8 +595,9 @@ function initEvents() {
             if (speaker2.value != 0) {
                 highlightAdviser(1);
                 blockPlayer2(false);
-                console.log("data["+(speaker2.value-1)+"]["+speaker2file.value+"]:" + speakerData[speaker2.value-1][speaker2file.value]);
-                audioPlayer2.obj = createAudio(audioPlayer2.obj,"audio2","./audio/audio2.wav");
+                let spk_file = speakerData[speaker2.value-1][speaker2file.value-1];
+                spk_file = spk_file.substring(0, spk_file.length-2) + ".wav";
+                audioPlayer2.obj = createAudio(audioPlayer2.obj,"audio2","./audio/" + spk_file);
                 audioPlayer2.obj = speaker2.appendChild(audioPlayer2.obj);
                 audioPlayer2.source = audioContext.createMediaElementSource(audioPlayer2.obj);
             }
@@ -626,7 +609,32 @@ function initEvents() {
     };
 }
 
+function initProgram() {
+    program.stdout.on("data", data => {
+        console.log(data.toString())
+        if (data == 0) {
+            runResult = MESSAGES.different;
+        }
+        else {
+            runResult = MESSAGES.equal;
+        }
+        isRunning = false;
+        blockRestart(false);
+        blockPlayer1(false);
+        blockPlayer2(false);
+        blockSelector1(false);
+        blockSelector2(false);
+        run.classList.remove("animated");
+        afterResultChanges();
+    });
+
+    program.stderr.on('data', (data) => {
+        console.log(`program stderr: ${data}`);
+    });
+}
+
 function init() {
+    initProgram();
     createSpeakerList();
     initConfigurationStart();
     initEvents();

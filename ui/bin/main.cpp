@@ -8,7 +8,11 @@ using namespace std;
 
 int main() {
     srand (time(NULL));
-    int res = rand() % 2;
     this_thread::sleep_for(std::chrono::milliseconds(3000));
-    cout << res << endl;
+    string s1, s2;
+    while(cin >> s1 >> s2) {
+        int res = rand() % 2;
+        this_thread::sleep_for(std::chrono::milliseconds(3000));
+        cout << res << endl;
+    }
 }
