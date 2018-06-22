@@ -297,8 +297,8 @@ function onResize() {
 // WAVES
 
 function updateAnalysers() {
-    let numBars = analyserNode.frequencyBinCount;
-    let freqByteData = new Uint8Array(analyserNode.frequencyBinCount);
+    let numBars = analyserNode.frequencyBinCount/5;
+    let freqByteData = new Uint8Array(numBars);
     analyserNode.getByteFrequencyData(freqByteData);
     analyserContext.clearRect(0, 0, canvasWidth, canvasHeight);
     analyserContext.fillStyle = '#000000';
