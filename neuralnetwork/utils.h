@@ -24,6 +24,18 @@ vector<float> readSpeakerFile (string speaker) {
     return speaker_data;
 }
 
+vector<float> readTestSpeakerFile (string speaker) {
+
+    ifstream speaker_file("./data/test/"+speaker+".sv", ifstream::in);
+
+    float value;
+    vector<float> speaker_data = vector<float> ();
+    while (speaker_file >> value) {
+        speaker_data.push_back(value);
+    }
+    return speaker_data;
+}
+
 vector<vector<vector<float>>> loadData (const string &name) {
     srand (time(NULL));
     unsigned size = 1097;

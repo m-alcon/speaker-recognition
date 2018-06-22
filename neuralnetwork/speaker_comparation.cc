@@ -32,19 +32,19 @@ int main(int argc, char** argv) {
     }));
 
 
-    //Load preexisting weights (if provided)
-    if (params.model_file != "") {
-        TextFileLoader loader(params.model_file);
-        loader.populate(model);
-    }
+    //Load preexisting weights
+    TextFileLoader loader("./model/model.params");
+    loader.populate(model);
 
     ComputationGraph cg;
     string s1, s2;
+
+    nn.disable_dropout();
 
     while (cin >> s1 >> s2) {
         Expression x1 = input(cg, {16896}, readSpeakerFile(s1));
         Expression x2 = input(cg, {16896}, readSpeakerFile(s2));
 
-        cout << nn.predict(x1, x2, cg) << endl;
+        cout << (nn.predict(x1, x2, cg)  >= 0.5f) << endl;
     }
 }

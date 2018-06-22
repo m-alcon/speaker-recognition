@@ -278,23 +278,17 @@ public:
 	 *
 	 * \return Label index
 	 */
-	int predict(const Expression &x1, const Expression &x2,
+	float predict(const Expression &x1, const Expression &x2,
 							ComputationGraph& cg) {
-		// run MLP to get class distribution
+								
 		Expression y1 = single_siamese_run(x1, cg);
 		Expression y2 = single_siamese_run(x2, cg);
 		Expression y_mix = concatenate({y1,y2});
 		Expression y = union_run(y_mix,cg);
 		// Get values
 		vector<float> probs = as_vector(cg.forward(y));
-		// Get argmax
-		// unsigned argmax = 0;
-		// for (unsigned i = 1; i < probs.size(); ++i) {
-		// 	if (probs[i] > probs[argmax])
-		// 		argmax = i;
-		// }
-		//cerr << "[size=" << probs.size() << " prob=" << probs[0] << "]" << endl;
-		return probs[0] >= 0.5f;
+		
+		return probs[0];
 	}
 
 	vector<float> predict_batch(const Expression &x1, const Expression &x2,

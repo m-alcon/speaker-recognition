@@ -44,17 +44,20 @@ let restart = document.getElementById("restart");
 let isActivePlay = [false,false];
 let isBlockedPlay = [false,false];
 let isRunning = false;
+let netLoaded = false;
 let readyToRun = [false,false,false,false];
 let audioPlayer1 = {obj: null,source: null}
 let audioPlayer2 = {obj: null,source: null}
 let audioNull = {obj: null,source: null}
 let actualAudio = {obj: null,source: null}
 let wantedMessage = "";
+let dot3anim = null;
 let MESSAGES = {
     init: "SPEAKERS, CHOICE YOUR VOICES",
     leftSpeaker: "LEFT SPEAKER, CHOICE YOUR VOICE",
     rightSpeaker: "RIGHT SPEAKER, CHOICE YOUR VOICE",
     ready: "YOU ARE READY TO RUN IT",
+    waitNet: "LOADING COMPARATOR<span>.</span><span>.</span><span>.</span>",
     run: "RUNNING",
     different: "DIFFERENT SPEAKERS",
     equal: "SAME SPEAKERS"
@@ -176,7 +179,7 @@ function fadeInTextAnimation() {
 function fadeOutTextAnimation() {
     var animOut = guideTitle.animate(KEYFRAMES.out, 250);
     animOut.onfinish = () => {
-        guideTitle.textContent = wantedMessage;
+        guideTitle.innerHTML = wantedMessage;
         fadeInTextAnimation();
     }
 }
@@ -187,7 +190,13 @@ function changeGuideTitle() {
     }
     else if (isReadyToRun()) {
         if (runResult == "") {
-            wantedMessage = MESSAGES.ready;
+            if (netLoaded) {
+                clearInterval(dot3anim);
+                wantedMessage = MESSAGES.ready;
+            }
+            else {
+                wantedMessage = MESSAGES.waitNet;
+            }
         }
         else {
             wantedMessage = runResult;
@@ -208,7 +217,7 @@ function afterResultChanges() {
     restart.style.display = "block";
     underRun.style.justifyContent = "space-between";
     changeGuideTitle();
-    guideAnimOut = setInterval(fadeOutTextAnimation(),10);
+    fadeOutTextAnimation();
 }
 
 function changeColors() {
@@ -225,6 +234,7 @@ function changeColors() {
     speaker2.style.outlineColor = color2;
     speaker2file.style.outlineColor = color2;
     if (extraStyle.cssRules.length > 0) {
+        extraStyle.deleteRule(3);
         extraStyle.deleteRule(2);
         extraStyle.deleteRule(1);
         extraStyle.deleteRule(0);
@@ -238,6 +248,12 @@ function changeColors() {
         "0% {color: "+ color1 + ";}" +
         "50% {color: "+ color2 + ";}" +
         "100% {color: "+ color1 + ";}}",2);
+    extraStyle.insertRule("@keyframes dots {" +
+        "0% {color: "+ color1 + ";}" +
+        "40% {color: "+ normalColor + ";}" +
+        "50% {color: "+ color2 + ";}" +
+        "90% {color: "+ normalColor + ";}" +
+        "100% {color: "+ color1 + ";}}",3);
 }
 
 function highlightAdviser(num) {
@@ -254,7 +270,7 @@ function restartAdvisers () {
 }
 
 function blockRun() {
-    if (isReadyToRun() && !isActivePlay[0] && !isActivePlay[1]) {
+    if  (isReadyToRun() && !isActivePlay[0] && !isActivePlay[1]) {
         run.classList.remove("blocked");
         run.style.borderColor = normalColor;
     }
@@ -263,8 +279,8 @@ function blockRun() {
         run.style.borderColor = blockColor;
     }
     changeGuideTitle();
-    if (guideTitle.textContent != wantedMessage)
-        guideAnimOut = setInterval(fadeOutTextAnimation(),10);
+    if (guideTitle.innerHTML != wantedMessage)
+        fadeOutTextAnimation();
 }
 
 function changeButtonSize() {
@@ -400,6 +416,7 @@ function blockSelector2(wantBlock) {
 // INITIALIZATIONS
 
 function isReadyToRun() {
+    if(!netLoaded) return false;
     for (let i = 0; i < readyToRun.length; i++) {
         if (!readyToRun[i]) return false;
     }
@@ -449,7 +466,7 @@ function initConfigurationStart() {
     restartAdvisers();
     speaker1file.classList.add("blocked");
     speaker2file.classList.add("blocked");
-    guideAnimIn = setInterval(fadeInTextAnimation(),10);
+    fadeInTextAnimation();
     guideTitle.style.opacity = "1";
     restart.style.display = "none";
     underRun.style.justifyContent = "center";
@@ -521,8 +538,8 @@ function initEvents() {
             blockSelector1(true);
             blockSelector2(true);
             changeGuideTitle();
-            if (guideTitle.textContent != wantedMessage)
-                guideAnimOut = setInterval(fadeOutTextAnimation(),10);
+            if (guideTitle.innerHTML != wantedMessage)
+                fadeOutTextAnimation();
             run.classList.add("animated");
             let speakersString = speakerData[speaker1.value-1][speaker1file.value-1] + "\n" +
                 speakerData[speaker2.value-1][speaker2file.value-1] + "\n"
@@ -611,7 +628,11 @@ function initEvents() {
 function initProgram() {
     program.stdout.on("data", data => {
         console.log(data.toString())
-        if (data == 0) {
+        if(data == "ready") {
+            wantedMessage = MESSAGES.ready;
+            blockRun();
+        }
+        else if (data == 0) {
             runResult = MESSAGES.different;
         }
         else {

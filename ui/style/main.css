@@ -27,6 +27,22 @@ h1 {
     opacity: 0;
 }
 
+h1 span {
+    animation-name: dots;
+    animation-duration: 1.4s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+}
+
+h1 span:nth-child(2) {
+    animation-delay: .2s;
+}
+
+h1 span:nth-child(3) {
+    animation-delay: .4s;
+}
+
 h2 {
     /* font-family: Verdana, Geneva, Tahoma, sans-serif; */
     font-family: "Ailerons";
@@ -322,27 +338,6 @@ select.blocked option {
 
 /* ANIMATIONS */
 
-@-ms-keyframes spin {
-    from {
-        -ms-transform: rotate(0deg);
-    } to {
-        -ms-transform: rotate(360deg);
-    }
-}
-@-moz-keyframes spin {
-    from {
-        -moz-transform: rotate(0deg);
-    } to {
-        -moz-transform: rotate(360deg);
-    }
-}
-@-webkit-keyframes spin {
-    from {
-        -webkit-transform: rotate(0deg);
-    } to {
-        -webkit-transform: rotate(360deg);
-    }
-}
 @keyframes spin {
     from {
         transform: rotate(0deg);

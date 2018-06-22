@@ -1,6 +1,7 @@
 neuralnetwork/data/*
 neuralnetwork/obj/*
 neuralnetwork/bin/*
+neuralnetwork/models/*
 .vscode/*
 Makefile
 ui/fonts
