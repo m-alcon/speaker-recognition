@@ -78,8 +78,7 @@ let program = spawn("./bin/checkspeakers");
 // SPEAKER LIST
 
 function createSpeakerList() {
-    fs.readFile("../scripts/speaker-audio-list.dat", "utf-8" , (err, data) => {
-    //fs.readFile("./scripts/app-speakers.dat", "utf-8" , (err, data) => {
+    fs.readFile("./scripts/speaker-audio-list.dat", "utf-8" , (err, data) => {
         if (err) throw err;
         data = data.split("\n");
         for (let i = 0; i < data.length; ++i) {
