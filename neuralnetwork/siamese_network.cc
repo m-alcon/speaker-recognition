@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
 
     ostringstream os;
     // Store a bunch of information in the model name
-    os << "syamese_network"
+    os << "./models/syamese_network"
         << "_" << getpid()
         << ".params";
     const string fname = os.str();
