@@ -13,7 +13,7 @@ for line in open('../data/train_condition_5.ndx','r'):
 clients = open('clients-score-list.dat','w')
 for line in open('../data/targets_condition5_new.ndx','r'):
     id, file = line.split()
-    score_list.write('%s %s\n'%(targets[id],file))
+    clients.write('%s %s\n'%(targets[id],file))
 clients.close()
 
 # IMPOSTORS
