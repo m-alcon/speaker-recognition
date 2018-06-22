@@ -51,7 +51,6 @@ let audioPlayer2 = {obj: null,source: null}
 let audioNull = {obj: null,source: null}
 let actualAudio = {obj: null,source: null}
 let wantedMessage = "";
-let dot3anim = null;
 let MESSAGES = {
     init: "SPEAKERS, CHOICE YOUR VOICES",
     leftSpeaker: "LEFT SPEAKER, CHOICE YOUR VOICE",
@@ -76,7 +75,7 @@ let KEYFRAMES = {
 
 let runResult = "";
 
-let program = spawn("./bin/checkspeakers");
+let program = spawn("./bin/speaker_comparation -t . -d . -tl . -td .");
 
 // SPEAKER LIST
 
@@ -191,7 +190,6 @@ function changeGuideTitle() {
     else if (isReadyToRun()) {
         if (runResult == "") {
             if (netLoaded) {
-                clearInterval(dot3anim);
                 wantedMessage = MESSAGES.ready;
             }
             else {
@@ -234,7 +232,6 @@ function changeColors() {
     speaker2.style.outlineColor = color2;
     speaker2file.style.outlineColor = color2;
     if (extraStyle.cssRules.length > 0) {
-        extraStyle.deleteRule(3);
         extraStyle.deleteRule(2);
         extraStyle.deleteRule(1);
         extraStyle.deleteRule(0);
@@ -248,12 +245,6 @@ function changeColors() {
         "0% {color: "+ color1 + ";}" +
         "50% {color: "+ color2 + ";}" +
         "100% {color: "+ color1 + ";}}",2);
-    extraStyle.insertRule("@keyframes dots {" +
-        "0% {color: "+ color1 + ";}" +
-        "40% {color: "+ normalColor + ";}" +
-        "50% {color: "+ color2 + ";}" +
-        "90% {color: "+ normalColor + ";}" +
-        "100% {color: "+ color1 + ";}}",3);
 }
 
 function highlightAdviser(num) {

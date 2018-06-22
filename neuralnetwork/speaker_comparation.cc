@@ -41,6 +41,7 @@ int main(int argc, char** argv) {
 
     nn.disable_dropout();
 
+    cout << "ready" << endl;
     while (cin >> s1 >> s2) {
         Expression x1 = input(cg, {16896}, readSpeakerFile(s1));
         Expression x2 = input(cg, {16896}, readSpeakerFile(s2));
