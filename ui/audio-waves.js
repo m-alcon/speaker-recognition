@@ -75,7 +75,9 @@ let KEYFRAMES = {
 
 let runResult = "";
 
-let program = spawn("./bin/speaker_comparation -t . -d . -tl . -td .");
+let program = spawn("./bin/speaker_comparation", ["-t",".","-d",".","-tl",".","-dl","."]);
+    program.stdin.setEncoding("utf-8");
+    program.stdout.setEncoding("utf-8");
 
 // SPEAKER LIST
 
@@ -189,12 +191,7 @@ function changeGuideTitle() {
     }
     else if (isReadyToRun()) {
         if (runResult == "") {
-            if (netLoaded) {
                 wantedMessage = MESSAGES.ready;
-            }
-            else {
-                wantedMessage = MESSAGES.waitNet;
-            }
         }
         else {
             wantedMessage = runResult;
@@ -208,6 +205,9 @@ function changeGuideTitle() {
     }
     else if (!readyToRun[1] && !readyToRun[3]) {
         wantedMessage = MESSAGES.init;
+    }
+    else if (!netLoaded) {
+        wantedMessage = MESSAGES.waitNet;
     }
 }
 
@@ -232,6 +232,7 @@ function changeColors() {
     speaker2.style.outlineColor = color2;
     speaker2file.style.outlineColor = color2;
     if (extraStyle.cssRules.length > 0) {
+        extraStyle.deleteRule(3);
         extraStyle.deleteRule(2);
         extraStyle.deleteRule(1);
         extraStyle.deleteRule(0);
@@ -244,6 +245,12 @@ function changeColors() {
     extraStyle.insertRule("@keyframes changeColor {" +
         "0% {color: "+ color1 + ";}" +
         "50% {color: "+ color2 + ";}" +
+        "100% {color: "+ color1 + ";}}",2);
+    extraStyle.insertRule("@keyframes dots {" +
+        "0% {color: "+ color1 + ";}" +
+        "25% {color: "+ normalColor + ";}" +
+        "50% {color: "+ color2 + ";}" +
+        "75% {color: "+ normalColor + ";}" +
         "100% {color: "+ color1 + ";}}",2);
 }
 
@@ -532,10 +539,10 @@ function initEvents() {
             if (guideTitle.innerHTML != wantedMessage)
                 fadeOutTextAnimation();
             run.classList.add("animated");
-            let speakersString = speakerData[speaker1.value-1][speaker1file.value-1] + "\n" +
-                speakerData[speaker2.value-1][speaker2file.value-1] + "\n"
-            console.log(speakersString)
-            program.stdin.write(speakersString);
+            let speakersString1 = speakerData[speaker1.value-1][speaker1file.value-1] + "\n";
+            let speakersString2 = speakerData[speaker2.value-1][speaker2file.value-1] + "\n";
+            program.stdin.write(speakersString1);
+            program.stdin.write(speakersString2);
         }
     }
 
@@ -616,27 +623,33 @@ function initEvents() {
     };
 }
 
+function onEnterResult() {
+    isRunning = false;
+    blockRestart(false);
+    blockPlayer1(false);
+    blockPlayer2(false);
+    blockSelector1(false);
+    blockSelector2(false);
+    run.classList.remove("animated");
+    afterResultChanges();
+}
+
 function initProgram() {
     program.stdout.on("data", data => {
-        console.log(data.toString())
-        if(data == "ready") {
+        console.log(data)
+        if (data == "ready\n") {
+            netLoaded = true;
             wantedMessage = MESSAGES.ready;
             blockRun();
         }
-        else if (data == 0) {
+        if (data == "0\n") {
             runResult = MESSAGES.different;
+            onEnterResult();
         }
-        else {
+        else if (data == "1\n") {
             runResult = MESSAGES.equal;
+            onEnterResult();
         }
-        isRunning = false;
-        blockRestart(false);
-        blockPlayer1(false);
-        blockPlayer2(false);
-        blockSelector1(false);
-        blockSelector2(false);
-        run.classList.remove("animated");
-        afterResultChanges();
     });
 
     program.stderr.on('data', (data) => {

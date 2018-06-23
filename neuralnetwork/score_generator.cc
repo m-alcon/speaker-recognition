@@ -45,8 +45,8 @@ int main(int argc, char** argv) {
     nn.disable_dropout();
     while (iimpostors >> s1 >> s2) {
         ComputationGraph cg;
-        Expression x1 = input(cg, {16896}, readTestSpeakerFile(s1));
-        Expression x2 = input(cg, {16896}, readTestSpeakerFile(s2));
+        Expression x1 = input(cg, {16896}, readTestSpeakerFileScore(s1));
+        Expression x2 = input(cg, {16896}, readTestSpeakerFileScore(s2));
         float prediction = nn.predict(x1, x2, cg);
 
         oimpostors << prediction << endl;
@@ -54,8 +54,8 @@ int main(int argc, char** argv) {
 
     while (iclients >> s1 >> s2) {
         ComputationGraph cg;
-        Expression x1 = input(cg, {16896}, readTestSpeakerFile(s1));
-        Expression x2 = input(cg, {16896}, readTestSpeakerFile(s2));
+        Expression x1 = input(cg, {16896}, readTestSpeakerFileScore(s1));
+        Expression x2 = input(cg, {16896}, readTestSpeakerFileScore(s2));
         float prediction = nn.predict(x1, x2, cg);
 
         oclients << prediction << endl;

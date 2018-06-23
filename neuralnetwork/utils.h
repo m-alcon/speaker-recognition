@@ -24,9 +24,21 @@ vector<float> readSpeakerFile (string speaker) {
     return speaker_data;
 }
 
-vector<float> readTestSpeakerFile (string speaker) {
+vector<float> readTestSpeakerFileScore (string speaker) {
 
     ifstream speaker_file("./data/test/"+speaker+".sv", ifstream::in);
+
+    float value;
+    vector<float> speaker_data = vector<float> ();
+    while (speaker_file >> value) {
+        speaker_data.push_back(value);
+    }
+    return speaker_data;
+}
+
+vector<float> readTestSpeakerFileDemo (string speaker) {
+
+    ifstream speaker_file("../neuralnetwork/data/test/"+speaker+".sv", ifstream::in);
 
     float value;
     vector<float> speaker_data = vector<float> ();

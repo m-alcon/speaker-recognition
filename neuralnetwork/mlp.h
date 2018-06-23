@@ -280,14 +280,14 @@ public:
 	 */
 	float predict(const Expression &x1, const Expression &x2,
 							ComputationGraph& cg) {
-								
+
 		Expression y1 = single_siamese_run(x1, cg);
 		Expression y2 = single_siamese_run(x2, cg);
 		Expression y_mix = concatenate({y1,y2});
 		Expression y = union_run(y_mix,cg);
 		// Get values
 		vector<float> probs = as_vector(cg.forward(y));
-		
+
 		return probs[0];
 	}
 

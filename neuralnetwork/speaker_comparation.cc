@@ -33,19 +33,21 @@ int main(int argc, char** argv) {
 
 
     //Load preexisting weights
-    TextFileLoader loader("./model/model.params");
+    cout << "loading" << endl;
+    TextFileLoader loader("../neuralnetwork/models/model.params");
     loader.populate(model);
 
-    ComputationGraph cg;
     string s1, s2;
 
     nn.disable_dropout();
 
     cout << "ready" << endl;
     while (cin >> s1 >> s2) {
-        Expression x1 = input(cg, {16896}, readSpeakerFile(s1));
-        Expression x2 = input(cg, {16896}, readSpeakerFile(s2));
-
-        cout << (nn.predict(x1, x2, cg)  >= 0.5f) << endl;
+        ComputationGraph cg;
+        Expression x1 = input(cg, {16896}, readTestSpeakerFileDemo(s1));
+        Expression x2 = input(cg, {16896}, readTestSpeakerFileDemo(s2));
+        float prediction = nn.predict(x1, x2, cg);
+        cout << (prediction >= 0.5f) << endl;
     }
+    cout << "end" << endl;
 }
