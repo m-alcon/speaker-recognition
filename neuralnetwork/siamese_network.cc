@@ -37,9 +37,9 @@ int main(int argc, char** argv) {
     cerr << "Parameters will be written to: " << fname << endl;
     // Build model -----------------------------------------------------------------------------------
 
-    ParameterCollection model, best_model;
+    ParameterCollection model;
     // Use Adam optimizer
-    float learning_rate = 0.00001f;
+    float learning_rate = 0.000001f;
     MomentumSGDTrainer trainer(model, learning_rate, 0.9);
     trainer.clip_threshold *= batch_size;
 
@@ -160,17 +160,19 @@ int main(int argc, char** argv) {
         // If the dev loss is lower than the previous ones, save the model
         if (hit_count > best_accuracy) {
             best_accuracy = hit_count;
-            best_model = model;
             count_from_best_accuracy = 0;
+            if (best_accuracy > 0.8) {
+                TextFileSaver saver(fname);
+                saver.save(model);
+                cout << "[SAVED]";
+            }
             cerr << "[BEST epoch=" << epoch << " Accuracy: " << best_accuracy/ (double) (validation_size*batch_size) << "]" << endl;
         }
         else {
             ++count_from_best_accuracy;
             cerr << "[COUNT epoch=" << epoch << " count=" << count_from_best_accuracy << "]" << endl;
             if (count_from_best_accuracy >= 10) {
-                TextFileSaver saver(fname);
-                saver.save(best_model);
-                cerr << "[SAVE Accuracy: " << best_accuracy/ (double) (validation_size*batch_size) << "]" << endl;
+                cerr << "[BEST Accuracy: " << best_accuracy/ (double) (validation_size*batch_size) << "]" << endl;
                 return 0;
             }
         }
