@@ -58,7 +58,7 @@ def createDataTest(file):
         negativeExample(speakers[j],d,file,isTest)
         del speakers[j]
         n_examples += 2
-    print('while1')
+
     speakers = list(d.keys())
     while n_examples%20 != 0:
         i = random.randrange(len(speakers))
@@ -68,7 +68,6 @@ def createDataTest(file):
         negativeExample(speakers[j],d,file,isTest)
         del speakers[j]
         n_examples += 2
-    print('while2')
 
 # DATA READING
 d = {}

@@ -472,10 +472,6 @@ function initConfigurationStart() {
     changeColors();
 }
 
-function onSelectChange(select) {
-    console.log(select.value);
-}
-
 function initEvents() {
     play1.onclick = () => {
         if (!isActivePlay[1] && !isBlockedPlay[0]) {
@@ -636,7 +632,7 @@ function onEnterResult() {
 
 function initProgram() {
     program.stdout.on("data", data => {
-        console.log(data)
+        console.log(`program stdout: ${data}`)
         if (data == "ready\n") {
             netLoaded = true;
             wantedMessage = MESSAGES.ready;

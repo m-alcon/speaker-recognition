@@ -14,10 +14,7 @@
 
 using namespace std;
 using namespace dynet;
-/**
- * \ingroup ffbuilders
- * Common activation functions used in multilayer perceptrons
- */
+
 enum Activation {
 	SIGMOID, /**< `SIGMOID` : Sigmoid function \f$x\longrightarrow \frac {1} {1+e^{-x}}\f$ */
 	TANH, /**< `TANH` : Tanh function \f$x\longrightarrow \frac {1-e^{-2x}} {1+e^{-2x}}\f$ */
