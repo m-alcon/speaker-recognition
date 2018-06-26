@@ -330,13 +330,13 @@ function updateAnalysers() {
             if (freqByteData[i+j])
                 mean = mean + freqByteData[i+j]
         if (isHorizontal) {
-            mean = (mean*canvasHeight/(step*2))/256 //Ajustamos al height del canvas
+            mean = (mean*canvasHeight/(step*2))/256 //Adjust canvas height
             let barHeight = (mean+4)*2
             let posBar = canvasHeight/2 - (mean+4)
             analyserContext.fillRect(i*relation + spaceBarWidth, posBar , barWidth, barHeight);
         }
         else {
-            mean = (mean*canvasWidth/step)/256 //Ajustamos al width del canvas
+            mean = (mean*canvasWidth/step)/256 //Adjust canvas width
             analyserContext.fillRect(0, i*3, mean+8, 8);
         }
     }

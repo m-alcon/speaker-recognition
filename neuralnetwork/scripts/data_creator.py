@@ -89,50 +89,18 @@ speakers = list(d.keys())
 random.shuffle(speakers)
 barrier = int( len(speakers)*0.8)
 
-loader_train = open('loader-train.dat','w')
+loader_train = open('../data/results/loader-train.dat','w')
 for speaker in speakers[:barrier]:
     for sfile in d[speaker]:
         loader_train.write(sfile+' ')
     loader_train.write("\n")
 loader_train.close()
 
-loader_test = open('loader-test.dat','w')
+loader_test = open('../data/results/loader-test.dat','w')
 for speaker in speakers[barrier:]:
     for sfile in d[speaker]:
         loader_test.writchoe(sfile+' ')
     loader_test.write("\n")
-
-# DATA FOR APP READING
-# d = {}
-# for line in open('../data/targets_condition5_new.ndx','r'):
-#     id, file = line.split()
-#     if id in d:
-#         d[id].append(file)
-#     else:
-#         d[id] = [file]
-
-# app = open('../ui/app-speakers.dat','w')
-# for i,speaker in enumerate(list(d.keys())):
-#     line = "speaker%d "%i
-#     for sfile in d[speaker]:
-#         line += sfile+' '
-#     app.write(line[:-1] + '\n')
-
-# # TRAIN AND TEST DIVISION
-# for k,v in d.items():
-#     random.shuffle(v)
-#     d[k] = (v[:6],v[6:8])
-
-# # BATCH CREATION
-# random.seed(1996)
-
-# train_file = open('train.dat','w')
-# createDataTrain(train_file)
-# train_file.close()
-
-# test_file = open('test.dat','w')
-# createDataTest(test_file)
-# test_file.close()
 
 
 

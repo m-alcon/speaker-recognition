@@ -32,13 +32,13 @@ int main(int argc, char** argv) {
     }));
 
 
-    TextFileLoader loader("./model/model.params");
+    TextFileLoader loader("./models/model.params");
     loader.populate(model);
 
-    ifstream iimpostors("./scripts/impostors-score-list.dat.txt");
-    ifstream iclients("./scripts/clients-score-list.dat.txt");
-    ofstream oclients("./scripts/clients.txt");
-    ofstream oimpostors("./scripts/impostors.txt");
+    ifstream iimpostors("./data/results/impostors-score-list.dat.txt");
+    ifstream iclients("./data/results/clients-score-list.dat.txt");
+    ofstream oclients("./data/results/clients.txt");
+    ofstream oimpostors("./data/results/impostors.txt");
 
     string s1, s2;
 

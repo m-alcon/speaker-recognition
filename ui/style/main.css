@@ -8,9 +8,6 @@ html, body {
 }
 
 body {
-    /* display: flex;
-    flex-direction: column;
-    align-items: center; */
     background-color: rgb(25, 25, 25);
     text-align: center;
     width: 90%;
@@ -18,7 +15,6 @@ body {
 }
 
 h1 {
-    /* font-family: Verdana, Geneva, Tahoma, sans-serif; */
     font-family: "Ailerons";
     font-size: 8.5vmin;
     font-weight: normal;
@@ -44,7 +40,6 @@ h1 span:nth-child(3) {
 }
 
 h2 {
-    /* font-family: Verdana, Geneva, Tahoma, sans-serif; */
     font-family: "Ailerons";
     font-size: 4vmin;
     font-weight: normal;
@@ -140,8 +135,6 @@ canvas#audioWave {
     border-width: 0.7vmin;
     border-radius: 100%;
     border-style: solid;
-    /* height: 10px;
-    width: 10px; */
     margin: 0;
     padding: 0;
     z-index: 2;
@@ -162,7 +155,6 @@ canvas#audioWave {
     box-sizing: border-box;
     height: 6vmin;
     border-color: transparent transparent transparent white;
-    /* margin: 0 4.2vmin; */
     border-style: solid;
     border-width: 3.5vmin 0 3.5vmin 6vmin;
     -webkit-transition: border-width 0.2s ease, height 0.2s ease, border-color 0.5s;

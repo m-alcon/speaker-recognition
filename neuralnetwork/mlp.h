@@ -1,15 +1,6 @@
 #ifndef MLP_H
 #define MLP_H
 
-/**
- * \file rnnlm-batch.h
- * \defgroup ffbuilders ffbuilders
- * \brief Feed forward nets builders
- *
- * An example implementation of a simple multilayer perceptron
- *
- */
-
 #include "dynet/nodes.h"
 #include "dynet/dynet.h"
 #include "dynet/training.h"
@@ -35,27 +26,14 @@ enum Activation {
 	SOFTMAX /**< `SOFTMAX` : Softmax function \f$\textbf{x}=(x_i)_{i=1,\dots,n}\longrightarrow \frac {e^{x_i}}{\sum_{j=1}^n e^{x_j} })_{i=1,\dots,n}\f$ */
 };
 
-/**
- * \ingroup ffbuilders
- * \struct Layer
- * \brief Simple layer structure
- * \details Contains all parameters defining a layer
- *
- */
 struct Layer {
 public:
 	unsigned input_dim; /**< Input dimension */
 	unsigned output_dim; /**< Output dimension */
 	Activation activation = LINEAR; /**< Activation function */
 	float dropout_rate = 0; /**< Dropout rate */
-	/**
-	 * \brief Build a feed forward layer
-	 *
-	 * \param input_dim Input dimension
-	 * \param output_dim Output dimension
-	 * \param activation Activation function
-	 * \param dropout_rate Dropout rate
-	 */
+
+
 	Layer(unsigned input_dim, unsigned output_dim, Activation activation, float dropout_rate) :
 		input_dim(input_dim),
 		output_dim(output_dim),
@@ -64,12 +42,6 @@ public:
 	Layer() {};
 };
 
-/**
- * \ingroup ffbuilders
- * \struct MLP
- * \brief Simple multilayer perceptron
- *
- */
 struct MLP {
 protected:
 	// Hyper-parameters
@@ -86,21 +58,14 @@ protected:
 	bool dropout_active = true;
 
 public:
-	/**
-	 * \brief Default constructor
-	 * \details Dont forget to add layers!
-	 */
+
+
 	MLP(ParameterCollection & model) {
 		SIAMESE_LAYERS = 0;
 		UNION_LAYERS = 0;
 	}
-	/**
-	 * \brief Returns a Multilayer perceptron
-	 * \details Creates a feedforward multilayer perceptron based on a list of layer descriptions
-	 *
-	 * \param model ParameterCollection to contain parameters
-	 * \param layers Layers description
-	 */
+
+
 	MLP(ParameterCollection& model,
 			vector<Layer> layers, vector<Layer> union_layers) {
 		// Verify layers compatibility
@@ -126,13 +91,8 @@ public:
 		}
 	}
 
-	/**
-	 * \brief Append a layer at the end of the network
-	 * \details [long description]
-	 *
-	 * \param model [description]
-	 * \param layer [description]
-	 */
+
+
 	void siamese_append(ParameterCollection& model, Layer layer) {
 		// Check compatibility
 		if (SIAMESE_LAYERS > 0)
@@ -162,14 +122,6 @@ public:
 		union_params.push_back({W, b});
 	}
 
-	/**
-	 * \brief Run the MLP on an input vector/batch
-	 *
-	 * \param x Input expression (vector or batch)
-	 * \param cg Computation graph
-	 *
-	 * \return [description]
-	 */
 	Expression single_siamese_run(const Expression &x,
 									ComputationGraph& cg) {
 		// Expression for the current hidden state
@@ -238,46 +190,18 @@ public:
 		return h_cur;
 	}
 
-	// Expression expressions_fusion(Expression a, Expression b, ComputationGraph& cg) {
-	// 	float *p_a = a.value().v;
-	// 	float *p_b = b.value().v;
-	// 	vector<float> fusion = vector<float> (p_a, p_a+a.dim().size());
-	// 	fusion.insert(fusion.end(), p_b, p_b + b.dim().size());
-
-	// 	return input(cg, {800}, fusion);
-	// }
-
-	/**
-	 * \brief Return the negative log likelihood for the (batched) pair (x,y)
-	 * \details For a batched input \f$\{x_i\}_{i=1,\dots,N}\f$, \f$\{y_i\}_{i=1,\dots,N}\f$, this computes \f$\sum_{i=1}^N \log(P(y_i\vert x_i))\f$ where \f$P(\textbf{y}\vert x_i)\f$ is modelled with $\mathrm{softmax}(MLP(x_i))$
-	 *
-	 * \param x Input batch
-	 * \param labels Output labels
-	 * \param cg Computation graph
-	 * \return Expression for the negative log likelihood on the batch
-	 */
 	Expression get_nll(const Expression &x1, const Expression &x2, const Expression &labels, ComputationGraph& cg) {
 		// compute output
 		Expression y1 = single_siamese_run(x1, cg);
 		Expression y2 = single_siamese_run(x2, cg);
 		Expression y_mix = concatenate({y1,y2});
 		Expression y = union_run(y_mix,cg);
-		// Do softmax
-		//Expression losses = pickneglogsoftmax(y, labels);
+
 		Expression losses = binary_log_loss(y, labels);
 		// Sum across batches
 		return sum_batches(losses);
 	}
 
-	/**
-	 * \brief Predict the most probable label
-	 * \details Returns the argmax of the softmax of the networks output
-	 *
-	 * \param x Input
-	 * \param cg Computation graph
-	 *
-	 * \return Label index
-	 */
 	float predict(const Expression &x1, const Expression &x2,
 							ComputationGraph& cg) {
 
@@ -293,44 +217,25 @@ public:
 
 	vector<float> predict_batch(const Expression &x1, const Expression &x2,
 							ComputationGraph& cg) {
-		// run MLP to get class distribution
+
 		Expression y1 = single_siamese_run(x1, cg);
 		Expression y2 = single_siamese_run(x2, cg);
 		Expression y_mix = concatenate({y1,y2});
 		Expression y = union_run(y_mix,cg);
 		// Get values
 		vector<float> probs = as_vector(cg.forward(y));
-		// Get argmax
-		// unsigned argmax = 0;
-		// for (unsigned i = 1; i < probs.size(); ++i) {
-		// 	if (probs[i] > probs[argmax])
-		// 		argmax = i;
-		// }
-		//cerr << "[size=" << probs.size() << " prob=" << probs[0] << "]" << endl;
+
 		return probs;
 	}
 
-	/**
-	 * \brief Enable dropout
-	 * \details This is supposed to be used during training or during testing if you want to sample outputs using montecarlo
-	 */
 	void enable_dropout() {
 		dropout_active = true;
 	}
 
-	/**
-	 * \brief Disable dropout
-	 * \details Do this during testing if you want a deterministic network
-	 */
 	void disable_dropout() {
 		dropout_active = false;
 	}
 
-	/**
-	 * \brief Check wether dropout is enabled or not
-	 *
-	 * \return Dropout state
-	 */
 	bool is_dropout_enabled() {
 		return dropout_active;
 	}

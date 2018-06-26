@@ -38,7 +38,6 @@ int main(int argc, char** argv) {
     // Build model -----------------------------------------------------------------------------------
 
     ParameterCollection model;
-    // Use Adam optimizer
     float learning_rate = 0.000001f;
     MomentumSGDTrainer trainer(model, learning_rate, 0.9);
     trainer.clip_threshold *= batch_size;
@@ -54,15 +53,7 @@ int main(int argc, char** argv) {
          Layer(/* input_dim */ 1000, /* output_dim */ 1, /* activation */ SIGMOID, /* dropout_rate */ 0.0),
     }));
 
-
-    // Load preexisting weights (if provided)
-    // if (params.model_file != "") {
-    //     TextFileLoader loader(params.model_file);
-    //     loader.populate(model);
-    // }
-
     // Initialize variables for training -------------------------------------------------------------
-    // Worst accuracy
     double best_accuracy = 0;
     unsigned count_from_best_accuracy = 0;
 
@@ -75,11 +66,10 @@ int main(int argc, char** argv) {
     for (unsigned epoch = 0; epoch < total_epoch; ++epoch) {
 
         // Start timer
-        nn.enable_dropout();
         // Activate dropout
-        // Run for the given number of epochs (or indefinitely if params.NUM_EPOCHS is negative)
-        //while (static_cast<int>(epoch) < params.NUM_EPOCHS || params.NUM_EPOCHS < 0) {
+        nn.enable_dropout();
         float loss = 0;
+        // Run for the given number of epochs
         for (unsigned i = 0; i < epoch_size; ++i) {
             // build graph for this instance
             ComputationGraph cg;
@@ -99,25 +89,18 @@ int main(int argc, char** argv) {
             // Reshape as batch (not very intuitive yet)
             Expression x1_batch = reshape(concatenate_cols(cur_batch1), Dim({16896}, batch_size));
             Expression x2_batch = reshape(concatenate_cols(cur_batch2), Dim({16896}, batch_size));
-            // Get negative log likelihood on batch
+
             Expression labels_batch = reshape(input(cg, {batch_size}, cur_labels), Dim({1}, batch_size));
             Expression loss_expr = nn.get_nll(x1_batch, x2_batch, labels_batch, cg);
-            // Get scalar error for monitoring
+
             loss += as_scalar(cg.forward(loss_expr));
-            // Increment number of samples processed
+
             // Compute gradient with backward pass
             cg.backward(loss_expr);
             // Update parameters
             trainer.update();
-            // Print progress every tenth of the dataset
-            //if (i % 3 == 0 || i == verification_stop) {
-                // Print informations
-                //trainer.status();
-                cerr << "\r[TRAIN epoch="<< epoch <<"] Process: " << i*100/epoch_size << "% | " << " Loss = " << (loss / (i*batch_size));
-                // Reinitialize timer
-                //iteration.reset(new Timer("completed in"));
-                // Reinitialize loss
-            //}
+            // Print progress
+            cerr << "\r[TRAIN epoch="<< epoch <<"] Process: " << i*100/epoch_size << "% | " << " Loss = " << (loss / (i*batch_size));
         }
         cerr << endl;
 
@@ -161,10 +144,10 @@ int main(int argc, char** argv) {
         if (hit_count > best_accuracy) {
             best_accuracy = hit_count;
             count_from_best_accuracy = 0;
-            if (best_accuracy > 0.8) {
+            if (best_accuracy >= 0.80f) {
                 TextFileSaver saver(fname);
                 saver.save(model);
-                cout << "[SAVED]";
+                cerr << "[SAVED]";
             }
             cerr << "[BEST epoch=" << epoch << " Accuracy: " << best_accuracy/ (double) (validation_size*batch_size) << "]" << endl;
         }

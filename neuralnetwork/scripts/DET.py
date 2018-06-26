@@ -4,12 +4,12 @@ import numpy as np
 from matplotlib import pyplot
 
 def Score(SC, th, rate):
-	
+
 	score_count = 0.0
 	for sc in SC:
 
 		if rate=='FAR':
-			
+
 			if float(sc)>=float(th):
 				score_count+=1
 
@@ -25,8 +25,8 @@ def Score(SC, th, rate):
 
 # 1.- We extract the client and the impostor scores
 
-client_file = open('clients.txt','r')
-impostor_file = open('impostors.txt','r')
+client_file = open('../data/results/clients.txt','r')
+impostor_file = open('../data/results/impostors.txt','r')
 
 CL = []
 
@@ -69,19 +69,20 @@ FRR = FRR[ERR_Idx-100:ERR_Idx+100]
 ERR_Idx = np.argwhere(np.diff(np.sign(FAR - FRR)) != 0).reshape(-1) + 0
 
 #print('ERR = {}%'.format(ERR))
-	
+
 # 4. We Plot the results
 fix, ax = pyplot.subplots()
 lin_reg = FAR
 
 ax.plot(FAR,FRR, color = 'royalblue')
-ax.plot(FAR, lin_reg, color='darkgray', alpha=0.65, linestyle = 'dashed')
+#ax.plot(FAR, lin_reg, color='darkgray', alpha=0.65, linestyle = 'dashed')
+print thresholds[ERR_Idx]
 ax.plot(FAR[ERR_Idx], lin_reg[ERR_Idx], 'ro')
-ax.legend(['Syamese Network: ERR = {}%'.format(ERR)])
+ax.legend(['Xarxa neuronal siamesa: ERR = {}%'.format(ERR)])
 
-pyplot.xlabel('FAR (%)') 
-pyplot.ylabel('FRR (%)') 
-pyplot.title('DET Curve')
-  
+pyplot.xlabel('FAR (%)')
+pyplot.ylabel('FRR (%)')
+#pyplot.title('Corba DET')
+
 pyplot.grid(True)
-pyplot.show() 
+pyplot.show()

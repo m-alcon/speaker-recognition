@@ -8,22 +8,22 @@ from matplotlib import mlab
 def list_to_array(lista):
 
 	array = np.zeros(len(lista))
-	
+
 	count = 0.0
 
 	for idx, a in enumerate(lista):
-		
+
 		array[idx] = float(a)
 		count+=array[idx]
-	
+
 	return array
 
 ################## MAIN ##################
 
 # 1.- We extract the client and the impostor scores
 
-client_file = open('clients.txt','r')
-impostor_file = open('impostors.txt','r')
+client_file = open('../data/results/clients.txt','r')
+impostor_file = open('../data/results/impostors.txt','r')
 
 CL = []
 
@@ -60,10 +60,10 @@ bins = np.linspace(0,1,60)   ######### Aixo ho tens que canviar a valors de 0 a 
 ax.hist(clients, bins, color='royalblue', alpha = 0.65, label = 'Clients: $\mu={}$, $\sigma={}$'.format(round(mu_cl,2),round(std_cl,2)), stacked=True, normed = True)
 ax.hist(impostors, bins, color='coral', alpha = 0.65, label = 'Impostors: $\mu={}$, $\sigma={}$'.format(round(mu_im,2),round(std_im,2)), stacked= True, normed = True)
 
-ax.plot(bins, mlab.normpdf(bins, mu_cl, std_cl),color = 'b', linestyle='dashed')
-ax.plot(bins, mlab.normpdf(bins, mu_im, std_im),color = 'orangered', linestyle='dashed')
+# ax.plot(bins, mlab.normpdf(bins, mu_cl, std_cl),color = 'b', linestyle='dashed')
+# ax.plot(bins, mlab.normpdf(bins, mu_im, std_im),color = 'orangered', linestyle='dashed')
 
-pyplot.title('Score Normed Histograms')
+#pyplot.title('Histograma dels resultats')
 pyplot.legend()
 #pyplot.grid(True)
-pyplot.show() 
+pyplot.show()
